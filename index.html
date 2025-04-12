@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>CarrollFam Vault</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CarrollFam Vault</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="login-box">
-        <h1>CarrollFam Login</h1>
-        <input type="text" id="username" placeholder="Username" aria-label="Username"/>
-        <input type="password" id="password" placeholder="Password" aria-label="Password"/>
-        <button id="login-button">Login</button>
-        <p id="login-error" class="error-message"></p>
-    </div>
+  <div id="login-box">
+    <h1>CarrollFam Login</h1>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p id="login-error"></p>
+  </div>
 
-    <div id="vault" style="display: none;">
-        <h2>Saved Passwords</h2>
-        <div id="cloud">
-            <div class="pw"><strong>Netflix:</strong> <span class="password-value">Carroll123</span></div>
-            <div class="pw"><strong>Hulu:</strong> <span class="password-value">Carroll456</span></div>
-            <div class="pw"><strong>Bank:</strong> <span class="password-value">CarrollBank789</span></div>
-            <div class="pw"><strong>Email:</strong> <span class="password-value">carrollfam@mail.com</span></div>
-        </div>
+  <div id="vault" style="display: none;">
+    <h2>Saved Passwords</h2>
+    <div id="cloud">
+      <span class="pw">Netflix: Carroll123</span>
+      <span class="pw">Hulu: Carroll456</span>
+      <span class="pw">Bank: CarrollBank789</span>
+      <span class="pw">Email: carrollfam@mail.com</span>
     </div>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcrypt.js/2.4.3/bcrypt.min.js"></script>
-    <script src="script.js"></script>
+  <!-- Load bcrypt.js before your custom script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcrypt.js/2.4.3/bcrypt.min.js"></script>
+  <script>
+    // Check if bcrypt is loaded properly
+    console.log(bcrypt); // You should see the bcrypt object in the console
+  </script>
+  <script src="script.js"></script>
 </body>
 </html>
