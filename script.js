@@ -1,4 +1,3 @@
-// script.js
 const storedUsername = "Carrollfam";
 const storedPasswordHash = "$2a$10$KQQ5aW9SFEgcTTUQ7q0bWOFcL7tsYIUkTFyDP/JLTeKb9pOslHZ9i";
 
@@ -14,7 +13,8 @@ async function login() {
         return;
     }
 
-    if (username !== storedUsername) {
+    // Case-insensitive username comparison
+    if (username.toLowerCase() !== storedUsername.toLowerCase()) {
         errorElement.innerText = "Wrong username.";
         return;
     }
@@ -33,8 +33,10 @@ async function login() {
     }
 }
 
-document.getElementById("login-button").addEventListener("click", login);
+// Add event listener for login button
+document.getElementById("login-btn").addEventListener("click", login);
 
+// Add event listener for "Enter" key on password field
 document.getElementById("password").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         login();
