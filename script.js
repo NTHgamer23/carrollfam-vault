@@ -1,43 +1,33 @@
-// script.js
+<script>
+    // Mock data for user validation
+    const savedUsername = "carrollfam";
+    const savedPassword = "Carroll123"; // Plain text password
 
-const storedUsername = "Carrollfam";
-const storedPassword = "Carrollfam123"; // Plain text password
+    // Event listener for the login button click
+    document.getElementById("login-btn").addEventListener("click", login);
 
-async function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const errorElement = document.getElementById("login-error");
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const errorField = document.getElementById("login-error");
 
-    errorElement.innerText = "";
+        // Clear previous errors
+        errorField.textContent = "";
 
-    // Check if both fields are entered
-    if (!username || !password) {
-        errorElement.innerText = "Please enter both username and password.";
-        return;
-    }
+        // Check if both username and password fields are filled
+        if (!username || !password) {
+            errorField.textContent = "Please fill in both username and password.";
+            return;
+        }
 
-    // Check if the username matches
-    if (username !== storedUsername) {
-        errorElement.innerText = "Wrong username.";
-        return;
-    }
+        // Check if the username and password match the saved values
+        if (username !== savedUsername || password !== savedPassword) {
+            errorField.textContent = "Invalid username or password.";
+            return;
+        }
 
-    // Compare the entered password with the stored password (in plain text)
-    if (password === storedPassword) {
-        // Hide login box and show vault
+        // Hide login box and show the vault
         document.getElementById("login-box").style.display = "none";
         document.getElementById("vault").style.display = "block";
-    } else {
-        errorElement.innerText = "Wrong password.";
     }
-}
-
-// Attach the login function to the login button
-document.getElementById("login-button").addEventListener("click", login);
-
-// Allow pressing Enter to trigger the login function
-document.getElementById("password").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        login();
-    }
-});
+</script>
