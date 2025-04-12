@@ -1,120 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Login & Vault</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding: 3em;
-            background: linear-gradient(135deg, #e0f2f7, #fce4ec); /* Light gradient background */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh; /* Ensure full viewport height */
-            margin: 0; /* Remove default body margin */
-        }
+/* style.css */
 
-        #login-box {
-            background: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
-            padding: 2.5em;
-            max-width: 350px;
-            margin: auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out; /* Smooth transition for hover effect */
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    padding: 3em;
+    background: linear-gradient(135deg, #e0f2f7, #fce4ec);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
 
-        #login-box:hover {
-            transform: translateY(-5px); /* Slight lift on hover */
-        }
+#login-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2.5em;
+    max-width: 350px;
+    margin: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
 
-        input {
-            display: block;
-            width: calc(100% - 1.2em); /* Account for padding */
-            margin: 1.2em 0;
-            padding: 0.7em;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            transition: border-color 0.3s ease;
-        }
+#login-box:hover {
+    transform: translateY(-5px);
+}
 
-        input:focus {
-            outline: none;
-            border-color: #64b5f6; /* Highlight on focus */
-        }
+input {
+    display: block;
+    width: calc(100% - 1.2em);
+    margin: 1.2em 0;
+    padding: 0.7em;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+}
 
-        button {
-            padding: 0.8em 1.5em;
-            background: linear-gradient(to right, #4a148c, #880e4f); /* Gradient button */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s ease;
-        }
+input:focus {
+    outline: none;
+    border-color: #64b5f6;
+}
 
-        button:hover {
-            background: linear-gradient(to right, #6a1b9a, #ad1457); /* Darker gradient on hover */
-        }
+button {
+    padding: 0.8em 1.5em;
+    background: linear-gradient(to right, #4a148c, #880e4f);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s ease;
+}
 
-        #vault h2 {
-            margin-top: 2.5em;
-            color: #333;
-        }
+button:hover {
+    background: linear-gradient(to right, #6a1b9a, #ad1457);
+}
 
-        #cloud {
-            margin-top: 1.5em;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+#vault h2 {
+    margin-top: 2.5em;
+    color: #333;
+}
 
-        .pw {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.8); /* Slightly transparent white */
-            margin: 0.7em;
-            padding: 0.8em 1.5em;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-in-out;
-        }
+#cloud {
+    margin-top: 1.5em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 
-        .pw:hover {
-            transform: scale(1.05); /* Slight scale on hover */
-        }
+.pw {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.8);
+    margin: 0.7em;
+    padding: 0.8em 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
 
-        .pw strong {
-            color: #283593; /* Strong text color */
-        }
+.pw:hover {
+    transform: scale(1.05);
+}
 
-        .pw span {
-            color: #78909c; /* Lighter text color */
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
+.pw strong {
+    color: #283593;
+}
 
-    <div id="login-box">
-        <h2>Login</h2>
-        <input type="text" placeholder="Username">
-        <input type="password" placeholder="Password">
-        <button>Login</button>
-    </div>
+.password-value {
+    color: #78909c;
+    font-size: 0.9em;
+}
 
-    <div id="vault">
-        <h2>Your Passwords</h2>
-        <div id="cloud">
-            <div class="pw"><strong>Website1</strong><span>pass123</span></div>
-            <div class="pw"><strong>Email</strong><span>securePass</span></div>
-            <div class="pw"><strong>Social</strong><span>mySocialPass</span></div>
-            <div class="pw"><strong>Bank</strong><span>bankPass456</span></div>
-            <div class="pw"><strong>Work</strong><span>workPass789</span></div>
-        </div>
-    </div>
-
-</body>
-</html>
+.error-message {
+    color: red;
+    margin-top: 1em;
+}
