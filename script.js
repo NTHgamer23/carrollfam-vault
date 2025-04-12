@@ -1,5 +1,7 @@
+// script.js
+
 const storedUsername = "Carrollfam";
-const storedPasswordHash = "$2a$10$KQQ5aW9SFEgcTTUQ7q0bWOFcL7tsYIUkTFyDP/JLTeKb9pOslHZ9i";
+const storedPassword = "Carrollfam123"; // Plain text password
 
 async function login() {
     const username = document.getElementById("username").value.trim();
@@ -8,35 +10,32 @@ async function login() {
 
     errorElement.innerText = "";
 
+    // Check if both fields are entered
     if (!username || !password) {
         errorElement.innerText = "Please enter both username and password.";
         return;
     }
 
-    // Case-insensitive username comparison
-    if (username.toLowerCase() !== storedUsername.toLowerCase()) {
+    // Check if the username matches
+    if (username !== storedUsername) {
         errorElement.innerText = "Wrong username.";
         return;
     }
 
-    try {
-        const result = await bcrypt.compare(password, storedPasswordHash);
-        if (result) {
-            document.getElementById("login-box").style.display = "none";
-            document.getElementById("vault").style.display = "block";
-        } else {
-            errorElement.innerText = "Wrong password.";
-        }
-    } catch (err) {
-        console.error("bcrypt comparison error:", err);
-        errorElement.innerText = "An unexpected error occurred.";
+    // Compare the entered password with the stored password (in plain text)
+    if (password === storedPassword) {
+        // Hide login box and show vault
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("vault").style.display = "block";
+    } else {
+        errorElement.innerText = "Wrong password.";
     }
 }
 
-// Add event listener for login button
-document.getElementById("login-btn").addEventListener("click", login);
+// Attach the login function to the login button
+document.getElementById("login-button").addEventListener("click", login);
 
-// Add event listener for "Enter" key on password field
+// Allow pressing Enter to trigger the login function
 document.getElementById("password").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         login();
