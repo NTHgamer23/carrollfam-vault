@@ -1,18 +1,21 @@
 const bcrypt = require('bcrypt');
 
 // Salt rounds (number of times to hash the password)
-const saltRounds = 10;
+const saltRounds = 12;
 
-// Hash a password
-bcrypt.hash('myPassword', saltRounds, function(err, hash) {
-  if (err) throw err;
+// Function to hash a password
+async function hashPassword(password) {
+  try {
+    const hash = await bcrypt.hash(password, saltRounds);
+    console.log('Hashed password:', hash);
 
-  // Store the hashed password (e.g., in a database)
-  console.log('Hashed password:', hash);
+    // Compare the password with the hash
+    const isMatch = await bcrypt.compare(password, hash);
+    console.log('Password match:', isMatch); // true or false
+  } catch (err) {
+    console.error('Error:', err);
+  }
+}
 
-  // Compare a password with a hash
-  bcrypt.compare('myPassword', hash, function(err, result) {
-    if (err) throw err;
-    console.log('Password match:', result); // true or false
-  });
-});
+// Example usage
+hashPassword('myPassword');
