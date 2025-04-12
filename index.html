@@ -11,8 +11,8 @@
     <h1>CarrollFam Login</h1>
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password" />
-    <button id="login-btn">Login</button>
-    <p id="login-error" style="color: red;"></p>
+    <button id="login-button">Login</button>
+    <p id="login-error"></p>
   </div>
 
   <div id="vault" style="display: none;">
@@ -25,49 +25,6 @@
     </div>
   </div>
 
-  <!-- Load bcrypt.js before your custom script -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcrypt.js/2.4.3/bcrypt.min.js"></script>
-  <script>
-    // Check if bcrypt is loaded properly
-    if (typeof bcrypt === 'undefined') {
-      console.error('bcrypt.js failed to load.');
-    }
-  </script>
-  <script>
-    // Mock data for user validation
-    const savedUsername = "carrollfam";
-    const savedPasswordHash = "$2a$10$7Q8hQ6Y7E5pzV7Q8ggZQ2uv1Wu5vVI3mEw5yWqzU1XzO8oAvAsE5m"; // "Carroll123" hashed
-
-    document.getElementById("login-btn").addEventListener("click", login);
-
-    async function login() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
-      const errorField = document.getElementById("login-error");
-
-      // Clear previous errors
-      errorField.textContent = "";
-
-      if (!username || !password) {
-        errorField.textContent = "Please fill in both username and password.";
-        return;
-      }
-
-      if (username !== savedUsername) {
-        errorField.textContent = "Invalid username or password.";
-        return;
-      }
-
-      // Compare the entered password with the hashed password
-      const isPasswordCorrect = await bcrypt.compare(password, savedPasswordHash);
-      if (isPasswordCorrect) {
-        // Hide login box and show the vault
-        document.getElementById("login-box").style.display = "none";
-        document.getElementById("vault").style.display = "block";
-      } else {
-        errorField.textContent = "Invalid username or password.";
-      }
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
