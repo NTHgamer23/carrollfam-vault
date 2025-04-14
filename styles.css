@@ -10,12 +10,13 @@ body, html {
   min-height: 100vh;
   padding: 1rem;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Box Styling (Login, Vault) */
 #login-box, #vault {
   background-color: #ffffff;
-  padding: 30px 40px;
+  padding: 30px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   text-align: center;
@@ -62,6 +63,7 @@ textarea {
   font-size: 1em;
   box-sizing: border-box;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  -webkit-appearance: none;
 }
 
 textarea {
@@ -89,6 +91,7 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.2s ease;
   margin-top: 10px;
+  -webkit-appearance: none;
 }
 
 button:disabled {
@@ -111,6 +114,20 @@ button:hover:not(:disabled) {
 
 #vault button[type="button"]:hover:not(:disabled) {
   background-color: #5a6268;
+}
+
+/* Delete Button Styling */
+button.delete-button {
+  width: auto;
+  padding: 8px 16px;
+  background-color: #dc3545;
+  font-size: 0.9em;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+button.delete-button:hover:not(:disabled) {
+  background-color: #b02a37;
 }
 
 /* Error Message Styling */
@@ -159,8 +176,15 @@ button:hover:not(:disabled) {
 @media (max-width: 400px) {
   #login-box,
   #vault {
-    padding: 20px;
+    padding: 20px 15px;
     max-width: 100%;
   }
+  button {
+    font-size: 1em;
+  }
+  input[type="text"],
+  input[type="password"],
+  textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
 }
-
