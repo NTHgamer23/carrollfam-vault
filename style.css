@@ -1,47 +1,157 @@
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 2em;
-  background: #f0f0f0;
+/* Basic Reset & Body Styling */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* Modern font stack */
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem; /* Add padding for smaller screens */
+  box-sizing: border-box; /* Include padding in element's total width/height */
 }
 
+/* Login Box Styling */
 #login-box {
-  background: white;
-  padding: 2em;
-  max-width: 300px;
-  margin: auto;
-  border-radius: 10px;
-  box-shadow: 0 0 10px #ccc;
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+  text-align: center;
+  width: 100%; /* Full width on small screens */
+  max-width: 350px; /* Max width */
+  box-sizing: border-box;
 }
 
-input {
-  display: block;
+#login-box h1 {
+  margin-top: 0; /* Remove default top margin */
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.8em;
+}
+
+#login-box .description {
+    font-size: 0.9em;
+    color: #555; /* Slightly darker */
+    margin-bottom: 25px; /* More space */
+}
+
+/* Input Field Styling */
+#login-box input[type="text"],
+#login-box input[type="password"] {
+  width: 100%; /* Use 100% width */
+  padding: 12px 10px; /* Slightly more padding */
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  box-sizing: border-box; /* Include padding/border in width */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for focus */
+}
+
+/* Input Focus Styling */
+#login-box input[type="text"]:focus,
+#login-box input[type="password"]:focus {
+  border-color: #007bff; /* Blue border on focus */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Subtle blue glow */
+  outline: none; /* Remove default outline */
+}
+
+/* Button Styling */
+#login-box button,
+#vault button {
   width: 100%;
-  margin: 1em 0;
-  padding: 0.5em;
-}
-
-button {
-  padding: 0.5em 1em;
-  background: #333;
+  padding: 12px;
+  background-color: #007bff;
   color: white;
   border: none;
+  border-radius: 4px;
+  font-size: 1.1em;
+  font-weight: 600; /* Bolder text */
   cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  margin-top: 10px; /* Add some space above button */
+}
+
+/* Button Focus Styling */
+#login-box button:focus-visible, /* Use focus-visible for keyboard users */
+#vault button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4); /* More prominent focus ring */
+}
+
+
+#login-box button:hover,
+#vault button:hover {
+  background-color: #0056b3;
+}
+
+/* Error Message Styling */
+#login-error-container {
+    min-height: 1.2em; /* Reserve space */
+    margin-top: 15px;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* Vault Styling */
+#vault {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 450px; /* Wider vault */
+  text-align: left;
+  box-sizing: border-box;
 }
 
 #vault h2 {
-  margin-top: 2em;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-#cloud {
-  margin-top: 1em;
+#vault-items p {
+  background-color: #e9ecef;
+  padding: 12px; /* More padding */
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 0.95em;
+  line-height: 1.5; /* Improved line spacing */
 }
 
-.pw {
-  display: inline-block;
-  background: #fff;
-  margin: 0.5em;
-  padding: 0.5em 1em;
-  border-radius: 8px;
-  box-shadow: 0 0 5px #aaa;
+#vault-items hr {
+    border: 0;
+    height: 1px;
+    background-color: #dee2e6; /* Lighter separator */
+    margin: 15px 0;
+}
+
+#vault button {
+    margin-top: 25px; /* More space above logout button */
+    background-color: #6c757d;
+}
+
+#vault button:hover {
+    background-color: #5a6268;
+}
+
+/* Accessibility Helper Class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
