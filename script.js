@@ -1,113 +1,162 @@
 /**
  * script.js
- * Handles the DEMO login logic for index.html (Improved Version)
- *
- * WARNING: This script uses hardcoded credentials for demonstration ONLY.
- * It is NOT secure and should NEVER be used for real applications
- * or with real passwords. Secure authentication requires server-side code.
+ * Handles login, signup, and vault logic for CarrollFam Vault demo.
+ * Communicates with backend for authentication and vault data.
  */
 
-// --- DOM Elements ---
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
-const loginError = document.getElementById('login-error'); // The <p> tag for the message
+const loginError = document.getElementById('login-error');
+const loginForm = document.getElementById('login-form');
 const loginBox = document.getElementById('login-box');
+const signupBox = document.getElementById('signup-box');
 const vault = document.getElementById('vault');
-const loginForm = document.getElementById('login-form'); // Get the form element
+let loginAttempts = 0;
+const MAX_ATTEMPTS = 3;
 
-// --- Dummy Credentials (FOR DEMO PURPOSES ONLY) ---
-// In a real application, these would NOT be stored in client-side code.
-const DEMO_USERNAME = 'admin';
-const DEMO_PASSWORD = 'password'; // Super insecure! Just for the demo flow.
+async function login(event) {
+  event.preventDefault();
 
-/**
- * Handles the login attempt when the form is submitted.
- * @param {Event} event - The form submission event.
- */
-function login(event) {
-  // Prevent the default form submission behavior which reloads the page
-  if (event) {
-      event.preventDefault();
+  if (loginAttempts >= MAX_ATTEMPTS) {
+    loginError.textContent = 'Too many attempts. Try again later.';
+    return;
   }
 
-  // Get the values entered by the user
-  const enteredUsername = usernameInput.value.trim();
-  const enteredPassword = passwordInput.value; // Don't trim password
-
-  // Clear any previous error messages
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
   loginError.textContent = '';
+  loginForm.querySelector('button').disabled = true;
 
-  // --- Basic Client-Side Validation ---
-  if (enteredUsername === '') {
-      loginError.textContent = 'Please enter your username.';
-      usernameInput.focus(); // Focus the username field
-      return; // Stop the function here
-  }
-  if (enteredPassword === '') {
-      loginError.textContent = 'Please enter your password.';
-      passwordInput.focus(); // Focus the password field
-      return; // Stop the function here
-  }
-
-  // --- DEMO Credential Check Logic ---
-  // Compare entered credentials with the hardcoded dummy credentials.
-  if (enteredUsername === DEMO_USERNAME && enteredPassword === DEMO_PASSWORD) {
-    // If credentials match (for this demo):
-    console.log('Demo login successful');
-    showVault(); // Show the vault section
-  } else {
-    // If credentials do not match:
-    console.log('Demo login failed');
-    loginError.textContent = 'Invalid username or password.'; // Show error message
-    // Optionally clear the password field after a failed attempt
-    passwordInput.value = '';
-    passwordInput.focus();
+  try {
+    const response = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      loginAttempts = 0;
+      showVault();
+      fetchVaultData();
+    } else {
+      loginAttempts++;
+      loginError.textContent = data.message;
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  } catch (error) {
+    loginError.textContent = 'Network error. Try again later.';
+  } finally {
+    loginForm.querySelector('button').disabled = false;
   }
 }
 
-/**
- * Shows the vault section and hides the login box.
- */
+async function signup(event) {
+  event.preventDefault();
+  const username = document.getElementById('signup-username').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const signupError = document.getElementById('signup-error');
+  signupError.textContent = '';
+  document.getElementById('signup-form').querySelector('button').disabled = true;
+
+  try {
+    const response = await fetch('/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      showLogin();
+      loginError.textContent = 'Signup successful! Please log in.';
+    } else {
+      signupError.textContent = data.message;
+    }
+  } catch (error) {
+    signupError.textContent = 'Network error. Try again later.';
+  } finally {
+    document.getElementById('signup-form').querySelector('button').disabled = false;
+  }
+}
+
+async function addVaultItem(event) {
+  event.preventDefault();
+  const website = document.getElementById('vault-website').value.trim();
+  const username = document.getElementById('vault-username').value.trim();
+  const note = document.getElementById('vault-note').value.trim();
+  const vaultForm = document.getElementById('vault-form');
+  vaultForm.querySelector('button').disabled = true;
+
+  try {
+    const response = await fetch('/vault-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ website, username, note }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      fetchVaultData();
+      vaultForm.reset();
+    }
+  } catch (error) {
+    console.error('Error adding vault item:', error);
+  } finally {
+    vaultForm.querySelector('button').disabled = false;
+  }
+}
+
+async function fetchVaultData() {
+  try {
+    const response = await fetch('/vault-data');
+    const data = await response.json();
+    if (data.success) {
+      const vaultItems = document.getElementById('vault-items');
+      vaultItems.innerHTML = data.vaultItems
+        .map(
+          (item) =>
+            `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Note:</strong> ${item.note}</p><hr>`
+        )
+        .join('');
+    }
+  } catch (error) {
+    console.error('Error fetching vault data:', error);
+  }
+}
+
 function showVault() {
-  loginBox.style.display = 'none'; // Hide the login form
-  vault.style.display = 'block'; // Show the vault content
+  loginBox.style.display = 'none';
+  signupBox.style.display = 'none';
+  vault.style.display = 'block';
 }
 
-/**
- * Hides the vault section and shows the login box.
- * Also clears fields and errors.
- */
-function hideVault() {
-    vault.style.display = 'none'; // Hide the vault content
-    loginBox.style.display = 'block'; // Show the login form
-
-    // Clear input fields for security/convenience
-    usernameInput.value = '';
-    passwordInput.value = '';
-    loginError.textContent = ''; // Clear any lingering error messages
-
-    // Optionally focus the username field when logging out
-    usernameInput.focus();
+function showLogin() {
+  signupBox.style.display = 'none';
+  vault.style.display = 'none';
+  loginBox.style.display = 'block';
+  usernameInput.value = '';
+  passwordInput.value = '';
+  loginError.textContent = '';
+  loginAttempts = 0;
+  usernameInput.focus();
 }
 
-/**
- * Handles the logout action.
- */
-function logout() {
-    console.log('Demo logout');
-    hideVault(); // Hide vault, show login, clear fields
+function showSignup() {
+  loginBox.style.display = 'none';
+  vault.style.display = 'none';
+  signupBox.style.display = 'block';
+  document.getElementById('signup-username').value = '';
+  document.getElementById('signup-password').value = '';
+  document.getElementById('signup-error').textContent = '';
 }
 
-// --- Event Listeners ---
-// We now use the form's 'submit' event instead of inline onclick for the button
-// This is generally better practice. The login function is called via onsubmit="login(event)" in the HTML form tag.
+async function logout() {
+  try {
+    await fetch('/logout', { method: 'POST' });
+    showLogin();
+  } catch (error) {
+    console.error('Logout error:', error);
+    showLogin();
+  }
+}
 
-// Note: The 'keypress' listeners for Enter key are no longer strictly necessary
-// because pressing Enter inside a form field typically triggers the form's submit event naturally.
-// However, keeping them can sometimes provide slightly more responsive UX or handle edge cases.
-// If keeping them, ensure they call login(null) or similar if the event object isn't needed there.
-// For simplicity, they are removed here as the form submit handles the Enter key.
-
-// --- Initial Setup ---
-// Give initial focus to the username field when the page loads
 usernameInput.focus();
