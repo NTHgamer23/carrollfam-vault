@@ -13,7 +13,7 @@ body, html {
 }
 
 /* Box Styling (Login, Signup, Vault) */
-#login-box, #signup-box, #vault {
+#login-box, #vault {
   background-color: #ffffff;
   padding: 30px 40px;
   border-radius: 8px;
@@ -113,17 +113,8 @@ button:hover:not(:disabled) {
   background-color: #5a6268;
 }
 
-#signup-box button[type="button"] {
-  background-color: #6c757d;
-}
-
-#signup-box button[type="button"]:hover:not(:disabled) {
-  background-color: #5a6268;
-}
-
 /* Error Message Styling */
-#login-error-container,
-#signup-error-container {
+#login-error-container {
   min-height: 1.2em;
   margin-top: 15px;
 }
@@ -167,7 +158,6 @@ button:hover:not(:disabled) {
 /* Responsive Design */
 @media (max-width: 400px) {
   #login-box,
-  #signup-box,
   #vault {
     padding: 20px;
     max-width: 100%;
