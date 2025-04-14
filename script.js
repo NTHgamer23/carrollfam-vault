@@ -6,7 +6,6 @@
 const HARDCODED_USERNAME = 'silientxroot';
 const HARDCODED_PASSWORD_HASH = 'OhqJpAqf/Xonb74AwZEJKeQ/JlAQKGa/iQ9FKHpBPv8=';
 const SALT = 'carrollfam-vault-demo-salt';
-const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
@@ -16,38 +15,20 @@ const loginBox = document.getElementById('login-box');
 const vault = document.getElementById('vault');
 let loginAttempts = 0;
 const MAX_ATTEMPTS = 3;
-let lockoutUntil = 0;
-
-// Session timeout handling
-let sessionTimer;
-function resetSessionTimer() {
-  clearTimeout(sessionTimer);
-  sessionTimer = setTimeout(() => {
-    logout();
-    alert('Session timed out due to inactivity.');
-  }, SESSION_TIMEOUT);
-}
 
 // Check if user is already logged in
 if (localStorage.getItem('isLoggedIn') === 'true') {
   showVault();
   fetchVaultData();
-  resetSessionTimer();
 }
 
-// HTTPS check
-if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-  alert('This app requires HTTPS for security. Redirecting...');
-  window.location.protocol = 'https:';
-}
-
-async function hashPassword(password, iterations = 1000000) {
+async function hashPassword(password) {
   try {
     const key = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
         salt: new TextEncoder().encode(SALT),
-        iterations,
+        iterations: 100000,
         hash: 'SHA-256'
       },
       await crypto.subtle.importKey(
@@ -71,22 +52,8 @@ async function hashPassword(password, iterations = 1000000) {
 async function login(event) {
   event.preventDefault();
 
-  const now = Date.now();
-  if (lockoutUntil > now) {
-    const secondsLeft = Math.ceil((lockoutUntil - now) / 1000);
-    loginError.textContent = `Too many attempts. Try again in ${secondsLeft} seconds.`;
-    return;
-  }
-
   if (loginAttempts >= MAX_ATTEMPTS) {
-    lockoutUntil = now + 30 * 1000; // 30-second lockout
-    loginError.textContent = 'Too many attempts. Try again in 30 seconds.';
-    setTimeout(() => {
-      loginAttempts = 0;
-      lockoutUntil = 0;
-      loginError.textContent = '';
-      loginForm.querySelector('button').disabled = false;
-    }, 30 * 1000);
+    loginError.textContent = 'Too many attempts. Try again later.';
     return;
   }
 
@@ -99,7 +66,10 @@ async function login(event) {
     if (!crypto.subtle) {
       throw new Error('Web Crypto API not supported. Use a secure browser.');
     }
-    const hashedPassword = await hashPassword(password, 1000000);
+    console.log('Attempting login with username:', username); // Debug
+    const hashedPassword = await hashPassword(password);
+    console.log('Generated hash:', hashedPassword); // Debug
+    console.log('Expected hash:', HARDCODED_PASSWORD_HASH); // Debug
     if (username !== HARDCODED_USERNAME || hashedPassword !== HARDCODED_PASSWORD_HASH) {
       loginAttempts++;
       loginError.textContent = 'Invalid username or password.';
@@ -113,9 +83,6 @@ async function login(event) {
     localStorage.setItem('isLoggedIn', 'true');
     showVault();
     fetchVaultData();
-    resetSessionTimer();
-    document.addEventListener('mousemove', resetSessionTimer);
-    document.addEventListener('keydown', resetSessionTimer);
   } catch (error) {
     console.error('Login error:', error.message);
     loginError.textContent = error.message;
@@ -145,12 +112,12 @@ async function addVaultItem(event) {
       return;
     }
 
-    // Hash the vault password with fewer iterations for speed
-    const hashedPassword = await hashPassword(password, 100000);
+    // Hash the vault password with PBKDF2
+    const hashedPassword = await hashPassword(password);
 
-    // Store both plain and hashed password
+    // Get existing vault items or initialize an empty array
     let vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
-    vaultItems.push({ website, username, password, hashedPassword, note });
+    vaultItems.push({ website, username, password: hashedPassword, note });
     localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
 
     fetchVaultData();
@@ -175,7 +142,7 @@ function fetchVaultData() {
     vaultItemsDiv.innerHTML = vaultItems
       .map(
         (item) =>
-          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${item.password}<br/><strong>Note:</strong> ${item.note}</p><hr>`
+          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> [Hidden for security]<br/><strong>Note:</strong> ${item.note}</p><hr>`
       )
       .join('');
   } catch (error) {
@@ -186,7 +153,6 @@ function fetchVaultData() {
 function showVault() {
   loginBox.style.display = 'none';
   vault.style.display = 'block';
-  resetSessionTimer();
 }
 
 function showLogin() {
@@ -196,11 +162,7 @@ function showLogin() {
   passwordInput.value = '';
   loginError.textContent = '';
   loginAttempts = 0;
-  lockoutUntil = 0;
   usernameInput.focus();
-  clearTimeout(sessionTimer);
-  document.removeEventListener('mousemove', resetSessionTimer);
-  document.removeEventListener('keydown', resetSessionTimer);
 }
 
 function logout() {
