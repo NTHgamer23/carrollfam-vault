@@ -3,38 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CarrollFam Vault - Demo (Improved)</title> <link rel="stylesheet" href="style.css" />
+  <title>CarrollFam Vault - Demo</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <div id="login-box">
     <h1>CarrollFam Login (Demo)</h1>
-    <p class="description">Enter 'admin' / 'password' to login.</p>
+    <p class="description">Enter credentials to login or create an account.</p>
 
-    <form id="login-form" onsubmit="login(event)"> <div> <label for="username" class="sr-only">Username</label> <input type="text" id="username" placeholder="Username" required /> </div>
-
-      <div> <label for="password" class="sr-only">Password</label> <input type="password" id="password" placeholder="Password" required /> </div>
-
-      <button type="submit">Login</button>
-
-      <div id="login-error-container" aria-live="polite">
-          <p id="login-error" class="error-message"></p>
+    <form id="login-form" onsubmit="login(event)">
+      <div>
+        <label for="username" class="sr-only">Username</label>
+        <input type="text" id="username" placeholder="Username" required />
       </div>
-    </form> </div>
+      <div>
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" placeholder="Password" required />
+      </div>
+      <button type="submit">Login</button>
+      <p><a href="#" onclick="showSignup()">Create an account</a></p>
+      <div id="login-error-container" aria-live="polite">
+        <p id="login-error" class="error-message"></p>
+      </div>
+    </form>
+  </div>
+
+  <div id="signup-box" style="display: none;">
+    <h1>CarrollFam Signup (Demo)</h1>
+    <form id="signup-form" onsubmit="signup(event)">
+      <div>
+        <label for="signup-username" class="sr-only">Username</label>
+        <input type="text" id="signup-username" placeholder="Username" required />
+      </div>
+      <div>
+        <label for="signup-password" class="sr-only">Password</label>
+        <input type="password" id="signup-password" placeholder="Password" required />
+      </div>
+      <button type="submit">Signup</button>
+      <button type="button" onclick="showLogin()">Back to Login</button>
+      <div id="signup-error-container" aria-live="polite">
+        <p id="signup-error" class="error-message"></p>
+      </div>
+    </form>
+  </div>
 
   <div id="vault" style="display: none;">
-    <h2>Vault Contents (Demo Data)</h2>
+    <h2>Vault Contents</h2>
+    <form id="vault-form" onsubmit="addVaultItem(event)">
+      <div>
+        <label for="vault-website" class="sr-only">Website</label>
+        <input type="text" id="vault-website" placeholder="Website" required />
+      </div>
+      <div>
+        <label for="vault-username" class="sr-only">Username</label>
+        <input type="text" id="vault-username" placeholder="Username" required />
+      </div>
+      <div>
+        <label for="vault-note" class="sr-only">Note</label>
+        <textarea id="vault-note" placeholder="Note"></textarea>
+      </div>
+      <button type="submit">Add Item</button>
+    </form>
     <div id="vault-items">
-      <p><strong>Website:</strong> Example Site 1<br/><strong>Username:</strong> user1<br/><strong>Note:</strong> This is placeholder data.</p>
-      <hr>
-      <p><strong>Website:</strong> Example Service A<br/><strong>Username:</strong> admin_a<br/><strong>Note:</strong> Only for demonstration.</p>
-      <hr>
-      <p><strong>Important Reminder:</strong> Never store real passwords or sensitive information directly in HTML or client-side JavaScript.</p>
+      <!-- Dynamically populated -->
     </div>
     <button type="button" onclick="logout()">Logout</button>
   </div>
 
   <script src="script.js"></script>
-
 </body>
 </html>
