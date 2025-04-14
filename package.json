@@ -1,7 +1,17 @@
 {
+  "name": "carroll-vault-server",
+  "version": "1.0.0",
+  "description": "Basic server for Carroll Vault demo with signup/login",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "bcryptjs": "^3.0.2",
-    "dotenv": "^16.5.0"
+    "bcrypt": "^5.1.1",  "_comment": "For password hashing",
+    "express": "^4.19.2", "_comment": "Web server framework",
+    "sqlite3": "^5.1.7", "_comment": "For the database"
   }
 }
