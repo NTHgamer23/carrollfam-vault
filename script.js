@@ -4,7 +4,7 @@
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
-const HARDCODED_PASSWORD_HASH = 'mZ7yV5zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8';
+const HARDCODED_PASSWORD_HASH = 'OhqJpAqf/Xonb74AwZEJKeQ/JlAQKGa/iQ9FKHpBPv8=';
 const SALT = 'carrollfam-vault-demo-salt';
 
 const usernameInput = document.getElementById('username');
