@@ -117,7 +117,7 @@ async function addVaultItem(event) {
 
     // Get existing vault items or initialize an empty array
     let vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
-    vaultItems.push({ website, username, password: hashedPassword, note });
+    vaultItems.push({ website, username, password, hashedPassword, note });
     localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
 
     fetchVaultData();
@@ -142,7 +142,9 @@ function fetchVaultData() {
     vaultItemsDiv.innerHTML = vaultItems
       .map(
         (item) =>
-          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> [Hidden for security]<br/><strong>Note:</strong> ${item.note}</p><hr>`
+          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${
+            item.password || '[Hidden for security]'
+          }<br/><strong>Note:</strong> ${item.note}</p><hr>`
       )
       .join('');
   } catch (error) {
