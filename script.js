@@ -13,6 +13,7 @@ const signupBox = document.getElementById('signup-box');
 const vault = document.getElementById('vault');
 let loginAttempts = 0;
 const MAX_ATTEMPTS = 3;
+const FETCH_TIMEOUT = 5000; // 5 seconds timeout
 
 async function login(event) {
   event.preventDefault();
@@ -28,11 +29,15 @@ async function login(event) {
   loginForm.querySelector('button').disabled = true;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
     const response = await fetch('/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     const data = await response.json();
     if (data.success) {
       loginAttempts = 0;
@@ -45,7 +50,14 @@ async function login(event) {
       passwordInput.focus();
     }
   } catch (error) {
-    loginError.textContent = 'Network error. Try again later.';
+    console.error('Login fetch error:', error.message);
+    if (error.name === 'AbortError') {
+      loginError.textContent = 'Request timed out. Please try again.';
+    } else if (error.message.includes('Failed to fetch')) {
+      loginError.textContent = 'Server unreachable. Check if the server is running.';
+    } else {
+      loginError.textContent = 'Network error. Try again later.';
+    }
   } finally {
     loginForm.querySelector('button').disabled = false;
   }
@@ -57,25 +69,38 @@ async function signup(event) {
   const password = document.getElementById('signup-password').value;
   const signupError = document.getElementById('signup-error');
   signupError.textContent = '';
-  document.getElementById('signup-form').querySelector('button').disabled = true;
+  const signupButton = document.getElementById('signup-form').querySelector('button');
+  signupButton.disabled = true;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
     const response = await fetch('/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     const data = await response.json();
     if (data.success) {
       showLogin();
       loginError.textContent = 'Signup successful! Please log in.';
+      document.getElementById('signup-form').reset();
     } else {
       signupError.textContent = data.message;
     }
   } catch (error) {
-    signupError.textContent = 'Network error. Try again later.';
+    console.error('Signup fetch error:', error.message);
+    if (error.name === 'AbortError') {
+      signupError.textContent = 'Request timed out. Please try again.';
+    } else if (error.message.includes('Failed to fetch')) {
+      signupError.textContent = 'Server unreachable. Check if the server is running.';
+    } else {
+      signupError.textContent = 'Network error. Try again later.';
+    }
   } finally {
-    document.getElementById('signup-form').querySelector('button').disabled = false;
+    signupButton.disabled = false;
   }
 }
 
@@ -88,11 +113,15 @@ async function addVaultItem(event) {
   vaultForm.querySelector('button').disabled = true;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
     const response = await fetch('/vault-data', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' Deprecation Warning: The `onabort` event is deprecated and will be removed in a future release. Please use the `abort` event instead.
       body: JSON.stringify({ website, username, note }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     const data = await response.json();
     if (data.success) {
       fetchVaultData();
@@ -107,7 +136,12 @@ async function addVaultItem(event) {
 
 async function fetchVaultData() {
   try {
-    const response = await fetch('/vault-data');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    const response = await fetch('/vault-data', {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
     const data = await response.json();
     if (data.success) {
       const vaultItems = document.getElementById('vault-items');
@@ -151,7 +185,13 @@ function showSignup() {
 
 async function logout() {
   try {
-    await fetch('/logout', { method: 'POST' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    await fetch('/logout', {
+      method: 'POST',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
     showLogin();
   } catch (error) {
     console.error('Logout error:', error);
