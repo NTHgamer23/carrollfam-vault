@@ -4,7 +4,7 @@
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
-const HARDCODED_PASSWORD_HASH = '$2a$12$2b3PZyZpdv2/9fLCfBsy3eu92iFZb3CZnW23aGdpBvwl4aJ9f.4Jy'; 
+const HARDCODED_PASSWORD_HASH = '$2a$12$2b3PZyZpdv2/9fLCfBsy3eu92iFZb3CZnW23aGdpBvwl4aJ9f.4Jy';
 
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
@@ -34,30 +34,33 @@ function login(event) {
   loginError.textContent = '';
   loginForm.querySelector('button').disabled = true;
 
-  try {
-    if (typeof bcrypt === 'undefined') {
-      throw new Error('Bcrypt library not loaded. Please check your internet connection.');
-    }
-    const isMatch = bcrypt.compareSync(password, HARDCODED_PASSWORD_HASH);
-    if (username !== HARDCODED_USERNAME || !isMatch) {
-      loginAttempts++;
-      loginError.textContent = 'Invalid username or password.';
-      passwordInput.value = '';
-      passwordInput.focus();
-      loginForm.querySelector('button').disabled = false;
-      return;
-    }
+  // Delay to ensure bcrypt is loaded
+  setTimeout(() => {
+    try {
+      if (typeof bcrypt === 'undefined') {
+        throw new Error('Bcrypt library not loaded. Please refresh the page or check your internet connection.');
+      }
+      const isMatch = bcrypt.compareSync(password, HARDCODED_PASSWORD_HASH);
+      if (username !== HARDCODED_USERNAME || !isMatch) {
+        loginAttempts++;
+        loginError.textContent = 'Invalid username or password.';
+        passwordInput.value = '';
+        passwordInput.focus();
+        loginForm.querySelector('button').disabled = false;
+        return;
+      }
 
-    loginAttempts = 0;
-    localStorage.setItem('isLoggedIn', 'true');
-    showVault();
-    fetchVaultData();
-  } catch (error) {
-    console.error('Login error:', error.message);
-    loginError.textContent = error.message;
-  } finally {
-    loginForm.querySelector('button').disabled = false;
-  }
+      loginAttempts = 0;
+      localStorage.setItem('isLoggedIn', 'true');
+      showVault();
+      fetchVaultData();
+    } catch (error) {
+      console.error('Login error:', error.message);
+      loginError.textContent = error.message;
+    } finally {
+      loginForm.querySelector('button').disabled = false;
+    }
+  }, 100);
 }
 
 function addVaultItem(event) {
@@ -93,6 +96,7 @@ function addVaultItem(event) {
     vaultForm.reset();
   } catch (error) {
     console.error('Error adding vault item:', error.message);
+    alert('Failed to add item: ' + error.message);
   } finally {
     vaultForm.querySelector('button').disabled = false;
   }
