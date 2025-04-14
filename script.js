@@ -1,15 +1,16 @@
 /**
  * script.js
- * Handles login, signup, and vault logic for CarrollFam Vault demo.
- * Communicates with backend for authentication and vault data.
+ * Handles login and vault logic for CarrollFam Vault demo.
+ * Communicates with Netlify Functions for backend logic.
  */
+
+const FUNCTION_BASE_URL = '/.netlify/functions';
 
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
 const loginError = document.getElementById('login-error');
 const loginForm = document.getElementById('login-form');
 const loginBox = document.getElementById('login-box');
-const signupBox = document.getElementById('signup-box');
 const vault = document.getElementById('vault');
 let loginAttempts = 0;
 const MAX_ATTEMPTS = 3;
@@ -31,11 +32,12 @@ async function login(event) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    const response = await fetch('/login', {
+    const response = await fetch(`${FUNCTION_BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
       signal: controller.signal,
+      credentials: 'include', // Include cookies for session
     });
     clearTimeout(timeoutId);
     const data = await response.json();
@@ -63,51 +65,11 @@ async function login(event) {
   }
 }
 
-async function signup(event) {
-  event.preventDefault();
-  const username = document.getElementById('signup-username').value.trim();
-  const password = document.getElementById('signup-password').value;
-  const signupError = document.getElementById('signup-error');
-  signupError.textContent = '';
-  const signupButton = document.getElementById('signup-form').querySelector('button');
-  signupButton.disabled = true;
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    const response = await fetch('/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    const data = await response.json();
-    if (data.success) {
-      showLogin();
-      loginError.textContent = 'Signup successful! Please log in.';
-      document.getElementById('signup-form').reset();
-    } else {
-      signupError.textContent = data.message;
-    }
-  } catch (error) {
-    console.error('Signup fetch error:', error.message);
-    if (error.name === 'AbortError') {
-      signupError.textContent = 'Request timed out. Please try again.';
-    } else if (error.message.includes('Failed to fetch')) {
-      signupError.textContent = 'Server unreachable. Check if the server is running.';
-    } else {
-      signupError.textContent = 'Network error. Try again later.';
-    }
-  } finally {
-    signupButton.disabled = false;
-  }
-}
-
 async function addVaultItem(event) {
   event.preventDefault();
   const website = document.getElementById('vault-website').value.trim();
   const username = document.getElementById('vault-username').value.trim();
+  const password = document.getElementById('vault-password').value.trim();
   const note = document.getElementById('vault-note').value.trim();
   const vaultForm = document.getElementById('vault-form');
   vaultForm.querySelector('button').disabled = true;
@@ -115,11 +77,12 @@ async function addVaultItem(event) {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    const response = await fetch('/vault-data', {
+    const response = await fetch(`${FUNCTION_BASE_URL}/vault-data`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' Deprecation Warning: The `onabort` event is deprecated and will be removed in a future release. Please use the `abort` event instead.
-      body: JSON.stringify({ website, username, note }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ website, username, password, note }),
       signal: controller.signal,
+      credentials: 'include',
     });
     clearTimeout(timeoutId);
     const data = await response.json();
@@ -138,8 +101,9 @@ async function fetchVaultData() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    const response = await fetch('/vault-data', {
+    const response = await fetch(`${FUNCTION_BASE_URL}/vault-data`, {
       signal: controller.signal,
+      credentials: 'include',
     });
     clearTimeout(timeoutId);
     const data = await response.json();
@@ -148,7 +112,7 @@ async function fetchVaultData() {
       vaultItems.innerHTML = data.vaultItems
         .map(
           (item) =>
-            `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Note:</strong> ${item.note}</p><hr>`
+            `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${item.password}<br/><strong>Note:</strong> ${item.note}</p><hr>`
         )
         .join('');
     }
@@ -159,12 +123,10 @@ async function fetchVaultData() {
 
 function showVault() {
   loginBox.style.display = 'none';
-  signupBox.style.display = 'none';
   vault.style.display = 'block';
 }
 
 function showLogin() {
-  signupBox.style.display = 'none';
   vault.style.display = 'none';
   loginBox.style.display = 'block';
   usernameInput.value = '';
@@ -174,22 +136,14 @@ function showLogin() {
   usernameInput.focus();
 }
 
-function showSignup() {
-  loginBox.style.display = 'none';
-  vault.style.display = 'none';
-  signupBox.style.display = 'block';
-  document.getElementById('signup-username').value = '';
-  document.getElementById('signup-password').value = '';
-  document.getElementById('signup-error').textContent = '';
-}
-
 async function logout() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    await fetch('/logout', {
+    await fetch(`${FUNCTION_BASE_URL}/logout`, {
       method: 'POST',
       signal: controller.signal,
+      credentials: 'include',
     });
     clearTimeout(timeoutId);
     showLogin();
