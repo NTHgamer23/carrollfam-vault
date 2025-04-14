@@ -1,175 +1,206 @@
 /**
  * server.js
- * Basic Node.js/Express server for Carroll Vault Demo
- * Handles signup, login, serves static files, and demonstrates bcrypt hashing.
- *
- * WARNING: This is a simplified example for educational purposes.
- * Production applications require more robust security, error handling,
- * session management, and potentially a different database setup.
+ * Node.js/Express server for CarrollFam Vault demo.
+ * Handles signup, login, vault data, and sessions.
  */
 
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const sqlite3 = require('sqlite3').verbose(); // Use verbose for more detailed logs
+const sqlite3 = require('sqlite3').verbose();
+const session = require('express-session');
+const rateLimit = require('express-rate-limit');
+const sanitizeHtml = require('sanitize-html');
 
 const app = express();
-const port = 3000; // Port the server will listen on
+const port = process.env.PORT || 3000;
+const saltRounds = 10;
 
-const saltRounds = 10; // Cost factor for bcrypt hashing
-
-// --- Database Setup ---
-// Creates or opens the users.db file in the same directory
 const db = new sqlite3.Database('./users.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-    if (err) {
-        console.error("Error opening database:", err.message);
-    } else {
-        console.log('Connected to the SQLite database.');
-        // Create the users table if it doesn't exist
-        db.run(`CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL
-        )`, (err) => {
-            if (err) {
-                console.error("Error creating table:", err.message);
-            } else {
-                console.log("Users table ready.");
-            }
-        });
-    }
+  if (err) {
+    console.error('Error opening database:', err.message);
+  } else {
+    console.log('Connected to SQLite database.');
+    db.run(
+      `CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL
+      )`
+    );
+    db.run(
+      `CREATE TABLE IF NOT EXISTS vault_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        website TEXT NOT NULL,
+        username TEXT NOT NULL,
+        note TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )`
+    );
+  }
 });
 
-// --- Middleware ---
-// To parse JSON request bodies (for signup/login)
 app.use(express.json());
-// To parse URL-encoded request bodies
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === 'production' },
+  })
+);
 
-// Serve static files (HTML, CSS, client-side JS)
-// Serve index.html at the root
+app.use(
+  ['/login', '/signup'],
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts
+    message: { success: false, message: 'Too many attempts. Try again later.' },
+  })
+);
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
-// Serve other static files like CSS and JS
-app.use(express.static(__dirname)); // Serves files from the current directory
 
-// --- API Routes ---
+function isAuthenticated(req, res, next) {
+  if (req.session.user) return next();
+  res.status(401).json({ success: false, message: 'Unauthorized' });
+}
 
-// SIGNUP Route (POST)
 app.post('/signup', async (req, res) => {
-    const { username, password } = req.body;
+  const username = sanitizeHtml(req.body.username);
+  const password = req.body.password;
 
-    // Basic validation
-    if (!username || !password) {
-        return res.status(400).json({ success: false, message: 'Username and password are required.' });
-    }
-    if (password.length < 6) { // Example: enforce minimum password length
-         return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
-    }
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Username and password are required.' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+  }
 
-
-    try {
-        // Hash the password using bcrypt
-        const passwordHash = await bcrypt.hash(password, saltRounds);
-
-        // Store username and hashed password in the database
-        const sql = `INSERT INTO users (username, password_hash) VALUES (?, ?)`;
-        db.run(sql, [username, passwordHash], function(err) { // Use function() to access this.lastID
-            if (err) {
-                // Check for unique constraint violation (username already exists)
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    console.error('Signup error: Username already exists -', username);
-                    return res.status(409).json({ success: false, message: 'Username already taken.' }); // 409 Conflict
-                }
-                console.error('Database error during signup:', err.message);
-                return res.status(500).json({ success: false, message: 'Database error during signup.' });
-            }
-            console.log(`User created with ID: ${this.lastID}, Username: ${username}`);
-            // Send success response (don't send hash back)
-            res.status(201).json({ success: true, message: 'Signup successful!' }); // 201 Created
-        });
-
-    } catch (error) {
-        console.error('Error during signup hashing:', error);
-        res.status(500).json({ success: false, message: 'Server error during signup.' });
-    }
+  try {
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const sql = `INSERT INTO users (username, password_hash) VALUES (?, ?)`;
+    db.run(sql, [username, passwordHash], function (err) {
+      if (err) {
+        if (err.message.includes('UNIQUE constraint failed')) {
+          return res.status(409).json({ success: false, message: 'Username already taken.' });
+        }
+        console.error('Database error during signup:', err.message);
+        return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+      }
+      console.log(`User created: ${username}`);
+      res.status(201).json({ success: true, message: 'Signup successful!' });
+    });
+  } catch (error) {
+    console.error('Signup error:', error.stack);
+    res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+  }
 });
 
-// LOGIN Route (POST)
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+app.post('/login', async (req, res) => {
+  const username = sanitizeHtml(req.body.username);
+  const password = req.body.password;
 
-    if (!username || !password) {
-        return res.status(400).json({ success: false, message: 'Username and password are required.' });
-    }
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Username and password are required.' });
+  }
 
+  try {
     const sql = `SELECT * FROM users WHERE username = ?`;
-    db.get(sql, [username], async (err, user) => { // Use db.get for single row
-        if (err) {
-            console.error('Database error during login:', err.message);
-            return res.status(500).json({ success: false, message: 'Database error during login.' });
+    db.get(sql, [username], async (err, user) => {
+      if (err) {
+        console.error('Database error during login:', err.message);
+        return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+      }
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid username or password.' });
+      }
+      try {
+        const match = await bcrypt.compare(password, user.password_hash);
+        if (match) {
+          req.session.user = { id: user.id, username };
+          res.status(200).json({ success: true, message: 'Login successful!' });
+        } else {
+          res.status(401).json({ success: false, message: 'Invalid username or password.' });
         }
-
-        if (!user) {
-            // User not found
-            console.log('Login attempt failed: User not found -', username);
-            return res.status(401).json({ success: false, message: 'Invalid username or password.' }); // 401 Unauthorized
-        }
-
-        try {
-            // User found, compare password with stored hash
-            const match = await bcrypt.compare(password, user.password_hash);
-
-            if (match) {
-                // Passwords match! Login successful.
-                console.log('Login successful for user:', username);
-                // In a real app, you'd create a session or JWT here.
-                // For this demo, just send success.
-                res.status(200).json({ success: true, message: 'Login successful!' });
-            } else {
-                // Passwords don't match
-                console.log('Login attempt failed: Incorrect password for user -', username);
-                res.status(401).json({ success: false, message: 'Invalid username or password.' }); // 401 Unauthorized
-            }
-        } catch (error) {
-            console.error('Error during login password comparison:', error);
-            res.status(500).json({ success: false, message: 'Server error during login.' });
-        }
+      } catch (error) {
+        console.error('Login error:', error.stack);
+        res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+      }
     });
+  } catch (error) {
+    console.error('Login error:', error.stack);
+    res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+  }
 });
 
-
-// --- Simple Protected Vault Data Route (GET) ---
-// In a real app, this route would be protected by session/token middleware
-// to ensure the user is actually logged in.
-// For this demo, we just return dummy data if requested.
-app.get('/vault-data', (req, res) => {
-    // TODO: Add actual authentication check here in a real app!
-    console.log("Serving vault data (demo - no auth check)");
-    res.status(200).json({
-        success: true,
-        vaultItems: [
-            { website: "Demo Site Alpha", username: "user_alpha", note: "Fetched from server" },
-            { website: "Demo Service Beta", username: "user_beta", note: "Requires real auth" },
-            { website: "Reminder", username: "System", note: "Protect this endpoint properly!" }
-        ]
-    });
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout error:', err.stack);
+      return res.status(500).json({ success: false, message: 'Logout failed.' });
+    }
+    res.status(200).json({ success: true, message: 'Logged out.' });
+  });
 });
 
+app.get('/vault-data', isAuthenticated, async (req, res) => {
+  try {
+    const sql = `SELECT website, username, note FROM vault_items WHERE user_id = ?`;
+    db.all(sql, [req.session.user.id], (err, rows) => {
+      if (err) {
+        console.error('Database error fetching vault data:', err.message);
+        return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+      }
+      res.status(200).json({ success: true, vaultItems: rows });
+    });
+  } catch (error) {
+    console.error('Vault data error:', error.stack);
+    res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+  }
+});
 
-// --- Start Server ---
+app.post('/vault-data', isAuthenticated, async (req, res) => {
+  const { website, username, note } = req.body;
+  const sanitized = {
+    website: sanitizeHtml(website),
+    username: sanitizeHtml(username),
+    note: sanitizeHtml(note),
+  };
+
+  if (!sanitized.website || !sanitized.username) {
+    return res.status(400).json({ success: false, message: 'Website and username are required.' });
+  }
+
+  try {
+    const sql = `INSERT INTO vault_items (user_id, website, username, note) VALUES (?, ?, ?, ?)`;
+    db.run(sql, [req.session.user.id, sanitized.website, sanitized.username, sanitized.note], function (err) {
+      if (err) {
+        console.error('Database error adding vault item:', err.message);
+        return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+      }
+      res.status(201).json({ success: true, message: 'Item added.' });
+    });
+  } catch (error) {
+    console.error('Vault item error:', error.stack);
+    res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
 
-// --- Graceful Shutdown ---
 process.on('SIGINT', () => {
-    db.close((err) => {
-        if (err) {
-            console.error(err.message);
-        }
-        console.log('Closed the database connection.');
-        process.exit(0);
-    });
+  db.close((err) => {
+    if (err) console.error('Error closing database:', err.message);
+    console.log('Closed database connection.');
+    process.exit(0);
+  });
 });
