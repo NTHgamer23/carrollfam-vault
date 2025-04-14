@@ -4,7 +4,7 @@
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
-const HARDCODED_PASSWORD_HASH = 'T3zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8';
+const HARDCODED_PASSWORD_HASH = 'Q7zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8';
 const SALT = 'carrollfam-vault-demo-salt';
 
 const usernameInput = document.getElementById('username');
@@ -67,6 +67,7 @@ async function login(event) {
       throw new Error('Web Crypto API not supported. Use a secure browser.');
     }
     const hashedPassword = await hashPassword(password);
+    console.log('Generated hash:', hashedPassword); // Debug log
     if (username !== HARDCODED_USERNAME || hashedPassword !== HARDCODED_PASSWORD_HASH) {
       loginAttempts++;
       loginError.textContent = 'Invalid username or password.';
