@@ -130,6 +130,20 @@ async function addVaultItem(event) {
   }
 }
 
+function deleteVaultItem(index) {
+  try {
+    let vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
+    if (index >= 0 && index < vaultItems.length) {
+      vaultItems.splice(index, 1);
+      localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
+      fetchVaultData();
+    }
+  } catch (error) {
+    console.error('Error deleting vault item:', error.message);
+    alert('Failed to delete item: ' + error.message);
+  }
+}
+
 function fetchVaultData() {
   if (localStorage.getItem('isLoggedIn') !== 'true') {
     showLogin();
@@ -141,10 +155,10 @@ function fetchVaultData() {
     const vaultItemsDiv = document.getElementById('vault-items');
     vaultItemsDiv.innerHTML = vaultItems
       .map(
-        (item) =>
+        (item, index) =>
           `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${
             item.password || '[Hidden for security]'
-          }<br/><strong>Note:</strong> ${item.note}</p><hr>`
+          }<br/><strong>Note:</strong> ${item.note}<br/><button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button></p><hr>`
       )
       .join('');
   } catch (error) {
