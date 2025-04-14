@@ -3,29 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CarrollFam Vault</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>CarrollFam Vault - Demo (Improved)</title> <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <div id="login-box">
-    <h1>CarrollFam Login</h1>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
-    <p id="login-error"></p>
-  </div>
+    <h1>CarrollFam Login (Demo)</h1>
+    <p class="description">Enter 'admin' / 'password' to login.</p>
+
+    <form id="login-form" onsubmit="login(event)"> <div> <label for="username" class="sr-only">Username</label> <input type="text" id="username" placeholder="Username" required /> </div>
+
+      <div> <label for="password" class="sr-only">Password</label> <input type="password" id="password" placeholder="Password" required /> </div>
+
+      <button type="submit">Login</button>
+
+      <div id="login-error-container" aria-live="polite">
+          <p id="login-error" class="error-message"></p>
+      </div>
+    </form> </div>
 
   <div id="vault" style="display: none;">
-    <h2>Saved Passwords</h2>
-    <div id="cloud">
-      <span class="pw">Netflix: Carroll123</span>
-      <span class="pw">Hulu: Carroll456</span>
-      <span class="pw">Bank: CarrollBank789</span>
-      <span class="pw">Email: carrollfam@mail.com</span>
+    <h2>Vault Contents (Demo Data)</h2>
+    <div id="vault-items">
+      <p><strong>Website:</strong> Example Site 1<br/><strong>Username:</strong> user1<br/><strong>Note:</strong> This is placeholder data.</p>
+      <hr>
+      <p><strong>Website:</strong> Example Service A<br/><strong>Username:</strong> admin_a<br/><strong>Note:</strong> Only for demonstration.</p>
+      <hr>
+      <p><strong>Important Reminder:</strong> Never store real passwords or sensitive information directly in HTML or client-side JavaScript.</p>
     </div>
+    <button type="button" onclick="logout()">Logout</button>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcrypt.js/2.4.3/bcrypt.min.js"></script>
   <script src="script.js"></script>
+
 </body>
 </html>
