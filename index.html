@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>CarrollFam Vault - Demo</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=1.2" />
 </head>
 <body>
   <div id="login-box">
@@ -14,11 +14,11 @@
     <form id="login-form" onsubmit="login(event)">
       <div>
         <label for="username" class="sr-only">Username</label>
-        <input type="text" id="username" placeholder="Username" required />
+        <input type="text" id="username" placeholder="Username" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
       <div>
         <label for="password" class="sr-only">Password</label>
-        <input type="password" id="password" placeholder="Password" required />
+        <input type="password" id="password" placeholder="Password" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
       <button type="submit">Login</button>
       <div id="login-error-container" aria-live="polite">
@@ -32,15 +32,15 @@
     <form id="vault-form" onsubmit="addVaultItem(event)">
       <div>
         <label for="vault-website" class="sr-only">Website</label>
-        <input type="text" id="vault-website" placeholder="Website" required />
+        <input type="text" id="vault-website" placeholder="Website" required autocomplete="off" />
       </div>
       <div>
         <label for="vault-username" class="sr-only">Username</label>
-        <input type="text" id="vault-username" placeholder="Username" required />
+        <input type="text" id="vault-username" placeholder="Username" required autocomplete="off" />
       </div>
       <div>
         <label for="vault-password" class="sr-only">Password</label>
-        <input type="password" id="vault-password" placeholder="Password" required />
+        <input type="password" id="vault-password" placeholder="Password" required autocomplete="off" />
       </div>
       <div>
         <label for="vault-note" class="sr-only">Note</label>
@@ -54,6 +54,6 @@
     <button type="button" onclick="logout()">Logout</button>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=1.2"></script>
 </body>
 </html>
