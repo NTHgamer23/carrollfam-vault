@@ -1,11 +1,12 @@
 /**
  * Handles login and vault logic for CarrollFam Vault demo.
- * Client-side with PBKDF2 hashing, localStorage only (syncing disabled temporarily).
+ * Client-side with PBKDF2 hashing, syncing via Netlify Functions.
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
 const HARDCODED_PASSWORD_HASH = 'OhqJpAqf/Xonb74AwZEJKeQ/JlAQKGa/iQ9FKHpBPv8=';
 const SALT = 'carrollfam-vault-demo-salt';
+let encryptionKey = null;
 
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
@@ -26,6 +27,60 @@ if (window.location.protocol !== 'https:' && window.location.hostname !== 'local
 if (localStorage.getItem('isLoggedIn') === 'true') {
   showVault();
   fetchVaultData();
+}
+
+async function deriveEncryptionKey(password) {
+  try {
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(password),
+      'PBKDF2',
+      false,
+      ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: new TextEncoder().encode(SALT + '-encryption'),
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    );
+  } catch (error) {
+    throw new Error('Encryption key derivation failed: ' + error.message);
+  }
+}
+
+async function encryptPassword(password, key) {
+  try {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      new TextEncoder().encode(password)
+    );
+    return { iv: Array.from(iv), encrypted: Array.from(new Uint8Array(encrypted)) };
+  } catch (error) {
+    throw new Error('Encryption failed: ' + error.message);
+  }
+}
+
+async function decryptPassword(encryptedData, key) {
+  try {
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: new Uint8Array(encryptedData.iv) },
+      key,
+      new Uint8Array(encryptedData.encrypted)
+    );
+    return new TextDecoder().decode(decrypted);
+  } catch (error) {
+    console.error('Decryption failed:', error);
+    return null;
+  }
 }
 
 async function hashPassword(password) {
@@ -88,6 +143,9 @@ async function login(event) {
       return;
     }
 
+    // Derive encryption key after login succeeds
+    encryptionKey = await deriveEncryptionKey(password);
+
     loginAttempts = 0;
     localStorage.setItem('isLoggedIn', 'true');
     showVault();
@@ -97,6 +155,81 @@ async function login(event) {
     loginError.textContent = `Login failed: ${error.message}`;
   } finally {
     loginForm.querySelector('button').disabled = false;
+  }
+}
+
+async function syncVaultItems(vaultItems) {
+  try {
+    const encryptedItems = await Promise.all(
+      vaultItems.map(async (item) => ({
+        ...item,
+        encryptedPassword: item.password ? await encryptPassword(item.password, encryptionKey) : null
+      }))
+    );
+    const response = await fetch('/.netlify/functions/sync-vault', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: HARDCODED_USERNAME, items: encryptedItems })
+    });
+    if (!response.ok) throw new Error('Sync failed: ' + response.statusText);
+    return await response.json();
+  } catch (error) {
+    console.error('Sync error:', error.message);
+    return null; // Continue with local storage if sync fails
+  }
+}
+
+async function fetchVaultData() {
+  if (localStorage.getItem('isLoggedIn') !== 'true') {
+    showLogin();
+    return;
+  }
+
+  try {
+    let serverItems = [];
+    try {
+      const response = await fetch('/.netlify/functions/sync-vault?username=' + encodeURIComponent(HARDCODED_USERNAME));
+      if (response.ok) {
+        serverItems = (await response.json()).items || [];
+        serverItems = await Promise.all(
+          serverItems.map(async (item) => ({
+            ...item,
+            password: item.encryptedPassword ? await decryptPassword(item.encryptedPassword, encryptionKey) : item.password
+          }))
+        );
+      }
+    } catch (error) {
+      console.warn('Server fetch failed, using local storage:', error.message);
+    }
+
+    // Get local items
+    let localItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
+
+    // Merge (server takes precedence)
+    const mergedItems = [];
+    const localMap = new Map(localItems.map((item) => [`${item.website}:${item.username}`, item]));
+    for (const serverItem of serverItems) {
+      const key = `${serverItem.website}:${serverItem.username}`;
+      mergedItems.push(serverItem);
+      localMap.delete(key);
+    }
+    mergedItems.push(...localMap.values());
+
+    // Update local storage
+    localStorage.setItem('vaultItems', JSON.stringify(mergedItems));
+
+    // Display
+    const vaultItemsDiv = document.getElementById('vault-items');
+    vaultItemsDiv.innerHTML = mergedItems
+      .map(
+        (item, index) =>
+          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${
+            item.password || '[Hidden for security]'
+          }<br/><strong>Note:</strong> ${item.note}<br/><button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button></p><hr>`
+      )
+      .join('');
+  } catch (error) {
+    console.error('Error fetching vault data:', error.message);
   }
 }
 
@@ -129,6 +262,9 @@ async function addVaultItem(event) {
     vaultItems.push({ website, username, password, hashedPassword, note });
     localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
 
+    // Try syncing
+    await syncVaultItems(vaultItems);
+
     // Refresh display
     await fetchVaultData();
     vaultForm.reset();
@@ -146,33 +282,12 @@ async function deleteVaultItem(index) {
     if (index >= 0 && index < vaultItems.length) {
       vaultItems.splice(index, 1);
       localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
+      await syncVaultItems(vaultItems);
       await fetchVaultData();
     }
   } catch (error) {
     console.error('Error deleting vault item:', error.message);
     alert('Failed to delete item: ' + error.message);
-  }
-}
-
-function fetchVaultData() {
-  if (localStorage.getItem('isLoggedIn') !== 'true') {
-    showLogin();
-    return;
-  }
-
-  try {
-    const vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
-    const vaultItemsDiv = document.getElementById('vault-items');
-    vaultItemsDiv.innerHTML = vaultItems
-      .map(
-        (item, index) =>
-          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${
-            item.password || '[Hidden for security]'
-          }<br/><strong>Note:</strong> ${item.note}<br/><button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button></p><hr>`
-      )
-      .join('');
-  } catch (error) {
-    console.error('Error fetching vault data:', error.message);
   }
 }
 
@@ -188,6 +303,7 @@ function showLogin() {
   passwordInput.value = '';
   loginError.textContent = '';
   loginAttempts = 0;
+  encryptionKey = null;
   usernameInput.focus();
 }
 
