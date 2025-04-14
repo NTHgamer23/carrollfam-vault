@@ -1,17 +1,24 @@
 {
   "name": "carroll-vault-server",
   "version": "1.0.0",
-  "description": "Basic server for Carroll Vault demo with signup/login",
+  "description": "Server for CarrollFam Vault demo with signup/login/vault",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",  "_comment": "For password hashing",
-    "express": "^4.19.2", "_comment": "Web server framework",
-    "sqlite3": "^5.1.7", "_comment": "For the database"
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.5.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
+    "sanitize-html": "^2.13.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
