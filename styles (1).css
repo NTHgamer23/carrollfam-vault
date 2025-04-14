@@ -1,0 +1,165 @@
+/* Basic Reset & Body Styling */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Box Styling (Login, Vault) */
+#login-box, #vault {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  width: 100%;
+  max-width: 350px;
+  box-sizing: border-box;
+}
+
+#vault {
+  max-width: 450px;
+  text-align: left;
+}
+
+h1, h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.8em;
+}
+
+#vault h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+/* Form and Input Styling */
+form div {
+  margin-bottom: 15px;
+}
+
+input[type="text"],
+input[type="password"],
+textarea {
+  width: 100%;
+  padding: 12px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+/* Button Styling */
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  margin-top: 10px;
+}
+
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4);
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+#vault button[type="button"] {
+  background-color: #6c757d;
+}
+
+#vault button[type="button"]:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+/* Error Message Styling */
+#login-error-container {
+  min-height: 1.2em;
+  margin-top: 15px;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* Vault Items Styling */
+#vault-items p {
+  background-color: #e9ecef;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+#vault-items hr {
+  border: 0;
+  height: 1px;
+  background-color: #dee2e6;
+  margin: 15px 0;
+}
+
+/* Accessibility Helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 400px) {
+  #login-box,
+  #vault {
+    padding: 20px;
+    max-width: 100%;
+  }
+}

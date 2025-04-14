@@ -1,0 +1,65 @@
+<script type="text/javascript">
+    var gk_fileData = {};
+    function loadFileData(filename) {
+      return gk_fileData[filename] || "";
+    }
+    </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CarrollFam Vault - Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="login-box">
+    <h1>CarrollFam Login (Demo)</h1>
+    <p class="description">Enter credentials to access the vault.</p>
+
+    <form id="login-form" onsubmit="login(event)">
+      <div>
+        <label for="username" class="sr-only">Username</label>
+        <input type="text" id="username" placeholder="Username" required />
+      </div>
+      <div>
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" placeholder="Password" required />
+      </div>
+      <button type="submit">Login</button>
+      <div id="login-error-container" aria-live="polite">
+        <p id="login-error" class="error-message"></p>
+      </div>
+    </form>
+  </div>
+
+  <div id="vault" style="display: none;">
+    <h2>Vault Contents</h2>
+    <form id="vault-form" onsubmit="addVaultItem(event)">
+      <div>
+        <label for="vault-website" class="sr-only">Website</label>
+        <input type="text" id="vault-website" placeholder="Website" required />
+      </div>
+      <div>
+        <label for="vault-username" class="sr-only">Username</label>
+        <input type="text" id="vault-username" placeholder="Username" required />
+      </div>
+      <div>
+        <label for="vault-password" class="sr-only">Password</label>
+        <input type="password" id="vault-password" placeholder="Password" required />
+      </div>
+      <div>
+        <label for="vault-note" class="sr-only">Note</label>
+        <textarea id="vault-note" placeholder="Note"></textarea>
+      </div>
+      <button type="submit">Add Item</button>
+    </form>
+    <div id="vault-items">
+      <!-- Dynamically populated -->
+    </div>
+    <button type="button" onclick="logout()">Logout</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
