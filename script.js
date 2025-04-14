@@ -1,10 +1,11 @@
 /**
  * Handles login and vault logic for CarrollFam Vault demo.
- * All logic is client-side using localStorage.
+ * All logic is client-side using localStorage with PBKDF2 hashing.
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
-const HARDCODED_PASSWORD_HASH = '$2a$12$2b3PZyZpdv2/9fLCfBsy3eu92iFZb3CZnW23aGdpBvwl4aJ9f.4Jy';
+const HARDCODED_PASSWORD_HASH = 'T3zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8z5zJ0lT8';
+const SALT = 'carrollfam-vault-demo-salt';
 
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
@@ -21,7 +22,34 @@ if (localStorage.getItem('isLoggedIn') === 'true') {
   fetchVaultData();
 }
 
-function login(event) {
+async function hashPassword(password) {
+  try {
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: new TextEncoder().encode(SALT),
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(password),
+        'PBKDF2',
+        false,
+        ['deriveKey']
+      ),
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt']
+    );
+    const hashBytes = await crypto.subtle.exportKey('raw', key);
+    return btoa(String.fromCharCode(...new Uint8Array(hashBytes)));
+  } catch (error) {
+    throw new Error('Hashing failed: ' + error.message);
+  }
+}
+
+async function login(event) {
   event.preventDefault();
 
   if (loginAttempts >= MAX_ATTEMPTS) {
@@ -34,36 +62,33 @@ function login(event) {
   loginError.textContent = '';
   loginForm.querySelector('button').disabled = true;
 
-  // Delay to ensure bcrypt is loaded
-  setTimeout(() => {
-    try {
-      if (typeof bcrypt === 'undefined') {
-        throw new Error('Bcrypt library not loaded. Please refresh the page or check your internet connection.');
-      }
-      const isMatch = bcrypt.compareSync(password, HARDCODED_PASSWORD_HASH);
-      if (username !== HARDCODED_USERNAME || !isMatch) {
-        loginAttempts++;
-        loginError.textContent = 'Invalid username or password.';
-        passwordInput.value = '';
-        passwordInput.focus();
-        loginForm.querySelector('button').disabled = false;
-        return;
-      }
-
-      loginAttempts = 0;
-      localStorage.setItem('isLoggedIn', 'true');
-      showVault();
-      fetchVaultData();
-    } catch (error) {
-      console.error('Login error:', error.message);
-      loginError.textContent = error.message;
-    } finally {
-      loginForm.querySelector('button').disabled = false;
+  try {
+    if (!crypto.subtle) {
+      throw new Error('Web Crypto API not supported. Use a secure browser.');
     }
-  }, 100);
+    const hashedPassword = await hashPassword(password);
+    if (username !== HARDCODED_USERNAME || hashedPassword !== HARDCODED_PASSWORD_HASH) {
+      loginAttempts++;
+      loginError.textContent = 'Invalid username or password.';
+      passwordInput.value = '';
+      passwordInput.focus();
+      loginForm.querySelector('button').disabled = false;
+      return;
+    }
+
+    loginAttempts = 0;
+    localStorage.setItem('isLoggedIn', 'true');
+    showVault();
+    fetchVaultData();
+  } catch (error) {
+    console.error('Login error:', error.message);
+    loginError.textContent = error.message;
+  } finally {
+    loginForm.querySelector('button').disabled = false;
+  }
 }
 
-function addVaultItem(event) {
+async function addVaultItem(event) {
   event.preventDefault();
 
   if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -84,8 +109,8 @@ function addVaultItem(event) {
       return;
     }
 
-    // Hash the vault password with 10 salt rounds
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    // Hash the vault password with PBKDF2
+    const hashedPassword = await hashPassword(password);
 
     // Get existing vault items or initialize an empty array
     let vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
