@@ -9,7 +9,7 @@
 <body>
   <div id="login-box">
     <h1>CarrollFam Login (Demo)</h1>
-    <p class="description">Enter credentials to login or create an account.</p>
+    <p class="description">Enter credentials to access the vault.</p>
 
     <form id="login-form" onsubmit="login(event)">
       <div>
@@ -21,28 +21,8 @@
         <input type="password" id="password" placeholder="Password" required />
       </div>
       <button type="submit">Login</button>
-      <p><a href="#" onclick="showSignup()">Create an account</a></p>
       <div id="login-error-container" aria-live="polite">
         <p id="login-error" class="error-message"></p>
-      </div>
-    </form>
-  </div>
-
-  <div id="signup-box" style="display: none;">
-    <h1>CarrollFam Signup (Demo)</h1>
-    <form id="signup-form" onsubmit="signup(event)">
-      <div>
-        <label for="signup-username" class="sr-only">Username</label>
-        <input type="text" id="signup-username" placeholder="Username" required />
-      </div>
-      <div>
-        <label for="signup-password" class="sr-only">Password</label>
-        <input type="password" id="signup-password" placeholder="Password" required />
-      </div>
-      <button type="submit">Signup</button>
-      <button type="button" onclick="showLogin()">Back to Login</button>
-      <div id="signup-error-container" aria-live="polite">
-        <p id="signup-error" class="error-message"></p>
       </div>
     </form>
   </div>
@@ -57,6 +37,10 @@
       <div>
         <label for="vault-username" class="sr-only">Username</label>
         <input type="text" id="vault-username" placeholder="Username" required />
+      </div>
+      <div>
+        <label for="vault-password" class="sr-only">Password</label>
+        <input type="text" id="vault-password" placeholder="Password" required />
       </div>
       <div>
         <label for="vault-note" class="sr-only">Note</label>
