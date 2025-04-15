@@ -1,34 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vault Login</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-900">
-  <div id="auth-section" class="p-6 max-w-sm mx-auto mt-10 bg-white shadow-md rounded">
-    <h1 class="text-2xl font-bold mb-4">Vault</h1>
-    <input id="email" type="email" placeholder="Email" class="w-full mb-2 p-2 border rounded">
-    <input id="password" type="password" placeholder="Password" class="w-full mb-4 p-2 border rounded">
-    <button onclick="login()" class="w-full bg-blue-600 text-white p-2 rounded mb-2">Login</button>
-    <button onclick="signup()" class="w-full bg-green-600 text-white p-2 rounded">Sign Up</button>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex items-center justify-center">
+  <div id="container" class="w-full max-w-md p-6 bg-gray-800 rounded-xl shadow-lg space-y-4">
+    <h1 id="title" class="text-3xl font-bold text-center">Vault Login</h1>
+
+    <input id="email" type="email" placeholder="Email" class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+    <input id="password" type="password" placeholder="Password" class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+
+    <div class="flex justify-between">
+      <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Login</button>
+      <button id="signupBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Sign Up</button>
+    </div>
+
+    <div id="message" class="text-center text-sm"></div>
   </div>
 
-  <div id="dashboard" class="hidden p-6 max-w-xl mx-auto mt-10 bg-white shadow-md rounded">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold">Your Vault</h2>
-      <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded">Logout</button>
+  <div id="dashboard" class="hidden w-full max-w-2xl p-6 bg-gray-800 rounded-xl shadow-lg space-y-4">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold">Vault Dashboard</h2>
+      <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">Logout</button>
     </div>
-    <div class="mb-4">
-      <input id="vault-key" type="text" placeholder="Service (e.g. Gmail)" class="w-full mb-2 p-2 border rounded">
-      <input id="vault-password" type="text" placeholder="Password" class="w-full mb-2 p-2 border rounded">
-      <button onclick="savePassword()" class="bg-blue-500 text-white p-2 rounded">Save Password</button>
+    <div class="space-y-2">
+      <input id="vaultName" placeholder="Name (e.g. Facebook)" class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+      <input id="vaultPassword" placeholder="Password" class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+      <button id="addVaultBtn" class="bg-purple-600 hover:bg-purple-700 w-full py-2 rounded">Add to Vault</button>
     </div>
-    <ul id="vault-list" class="space-y-2"></ul>
+    <div id="vaultItems" class="space-y-2"></div>
   </div>
 
   <script>
@@ -42,71 +48,87 @@
       measurementId: "G-6L6FH62554"
     };
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
-    const db = firebase.database();
+    const db = firebase.firestore();
 
-    const authSection = document.getElementById('auth-section');
-    const dashboard = document.getElementById('dashboard');
-    const vaultList = document.getElementById('vault-list');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const addVaultBtn = document.getElementById('addVaultBtn');
+    const message = document.getElementById('message');
 
-    function showDashboard() {
-      authSection.classList.add('hidden');
-      dashboard.classList.remove('hidden');
-      loadVault();
-    }
-
-    function login() {
+    loginBtn.onclick = () => {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       auth.signInWithEmailAndPassword(email, password)
         .then(() => showDashboard())
-        .catch(err => alert(err.message));
-    }
+        .catch(err => message.innerText = err.message);
+    };
 
-    function signup() {
+    signupBtn.onclick = () => {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
-          alert("Account created. Please log in.");
+          message.innerText = 'Account created. Please log in.';
         })
-        .catch(err => alert(err.message));
-    }
+        .catch(err => message.innerText = err.message);
+    };
 
-    function logout() {
-      auth.signOut().then(() => {
-        dashboard.classList.add('hidden');
-        authSection.classList.remove('hidden');
-      });
-    }
-
-    function savePassword() {
-      const key = document.getElementById('vault-key').value;
-      const password = document.getElementById('vault-password').value;
-      const uid = auth.currentUser.uid;
-      if (key && password) {
-        db.ref('vault/' + uid + '/' + key).set(password);
-        loadVault();
-      }
-    }
-
-    function loadVault() {
-      vaultList.innerHTML = '';
-      const uid = auth.currentUser.uid;
-      db.ref('vault/' + uid).once('value').then(snapshot => {
-        snapshot.forEach(child => {
-          const li = document.createElement('li');
-          li.textContent = `${child.key}: ${child.val()}`;
-          li.classList.add('border', 'p-2', 'rounded', 'bg-gray-100');
-          vaultList.appendChild(li);
-        });
-      });
-    }
+    logoutBtn.onclick = () => {
+      auth.signOut();
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('container').classList.remove('hidden');
+    };
 
     auth.onAuthStateChanged(user => {
-      if (user) showDashboard();
+      if (user) {
+        showDashboard();
+      }
     });
+
+    function showDashboard() {
+      document.getElementById('container').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      loadVault();
+    }
+
+    addVaultBtn.onclick = () => {
+      const name = document.getElementById('vaultName').value;
+      const password = document.getElementById('vaultPassword').value;
+      const user = auth.currentUser;
+      if (!name || !password) return;
+      db.collection("vault").add({
+        uid: user.uid,
+        name,
+        password,
+        created: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => loadVault());
+    };
+
+    function loadVault() {
+      const user = auth.currentUser;
+      db.collection("vault")
+        .where("uid", "==", user.uid)
+        .orderBy("created", "desc")
+        .get()
+        .then(snapshot => {
+          const vaultItems = document.getElementById('vaultItems');
+          vaultItems.innerHTML = '';
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const div = document.createElement('div');
+            div.className = "flex justify-between items-center bg-gray-700 px-4 py-2 rounded";
+            div.innerHTML = `<div><strong>${data.name}</strong>: ${data.password}</div>
+              <button class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded" onclick="deleteVault('${doc.id}')">Delete</button>`;
+            vaultItems.appendChild(div);
+          });
+        });
+    }
+
+    function deleteVault(id) {
+      db.collection("vault").doc(id).delete().then(() => loadVault());
+    }
   </script>
 </body>
 </html>
