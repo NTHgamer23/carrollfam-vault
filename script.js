@@ -49,7 +49,6 @@ document.getElementById("showLogin").onclick = () => {
   authSection.style.display = "block";
 };
 
-// Moved logout function to the javascript file.
 document.getElementById("logoutBtn").onclick = async () => {
   if (unsubscribe) {
     unsubscribe();
@@ -99,8 +98,22 @@ const showVault = () => {
     const items = [];
     snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
     renderVaultItems(items);
+    console.log("snapshot updated")
   });
 };
+
+vaultItemsDiv.addEventListener("click", async (e) => {
+  if (e.target.tagName === "BUTTON" && e.target.dataset.id) {
+    console.log("Current user:", auth.currentUser);
+    try {
+      await deleteDoc(doc(db, "vault", e.target.dataset.id));
+      console.log("Document deleted:", e.target.dataset.id);
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      alert("Failed to delete item. Please check the console for details.");
+    }
+  }
+});
 
 onAuthStateChanged(auth, user => {
   if (user) showVault();
