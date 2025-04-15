@@ -30,7 +30,7 @@ const loginUser = async () => {
     console.log("User logged in successfully!");
   } catch (error) {
     console.error("Login Error:", error.message);
-    alert(`Login Failed: ${error.message}`);
+    alert(Login Failed: ${error.message}); // Improved user feedback
   }
 };
 document.getElementById("loginBtn").onclick = loginUser;
@@ -44,29 +44,28 @@ const signUpUser = async () => {
     const user = userCredential.user;
 
     // Create a user document in the "users" collection
-    await setDoc(doc(db, "users", user.uid), {
-      email: email,
-      familyId: null,
+    await setDoc(doc(db, "users", user.uid), { // Use setDoc
+      email: email, // Store the email
+      familyId: null, // Initialize familyId
+      // Add any other user data you want to store here
     });
 
     console.log("Account created successfully!");
-    alert("Account created! Please log in.");
+    alert("Account created! Please log in."); // Provide login instruction
     signupSection.style.display = "none";
     authSection.style.display = "block";
   } catch (error) {
     console.error("Signup Error:", error.message);
-    alert(`Signup Failed: ${error.message}`);
+    alert(Signup Failed: ${error.message}); // Detailed error message
   }
 };
 document.getElementById("signupBtn").onclick = signUpUser;
 
-// Show signup section
 document.getElementById("showSignup").onclick = () => {
   authSection.style.display = "none";
   signupSection.style.display = "block";
 };
 
-// Show login section
 document.getElementById("showLogin").onclick = () => {
   signupSection.style.display = "none";
   authSection.style.display = "block";
@@ -74,12 +73,17 @@ document.getElementById("showLogin").onclick = () => {
 
 // Function for user logout
 const logoutUser = async () => {
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+    console.log("Snapshot listener unsubscribed.");
+  }
   try {
     await signOut(auth);
     console.log("User logged out successfully!");
   } catch (error) {
     console.error("Logout Error:", error.message);
-    alert(`Logout Failed: ${error.message}`);
+    alert(Logout Failed: ${error.message});
   }
 };
 document.getElementById("logoutBtn").onclick = logoutUser;
@@ -102,7 +106,7 @@ const addVaultItem = async () => {
       console.log("Item added to vault:", item);
     } catch (error) {
       console.error("Error adding item:", error.message);
-      alert(`Failed to add item: ${error.message}`);
+      alert(Failed to add item: ${error.message});
     }
   }
 };
@@ -114,33 +118,35 @@ const renderVaultItems = (items) => {
   items.forEach(({ id, item }) => {
     const div = document.createElement("div");
     div.className = "vault-item";
-    div.innerHTML = `
+    div.innerHTML = 
       <span>${item}</span>
       <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">Delete</button>
-    `;
+    ;
     vaultItemsDiv.appendChild(div);
   });
 };
 
+let unsubscribe = null;
 // Function to show vault
 const showVault = () => {
   authSection.style.display = "none";
   signupSection.style.display = "none";
   vaultSection.style.display = "block";
 
+  if (unsubscribe) unsubscribe();
   const currentUser = auth.currentUser;
   if (currentUser) {
     const q = query(collection(db, "vault"), where("userId", "==", currentUser.uid));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    unsubscribe = onSnapshot(q, (snapshot) => {
       const items = [];
       snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
       renderVaultItems(items);
       console.log("Snapshot updated");
     });
   }
+
 };
 
-// Handle user state change (log in / log out)
 onAuthStateChanged(auth, user => {
   if (user) {
     showVault();
@@ -152,17 +158,20 @@ onAuthStateChanged(auth, user => {
 
 // Event listener for deleting vault items
 vaultItemsDiv.addEventListener("click", async (e) => {
-  if (e.target.classList.contains("delete-btn")) {
+  if (e.target.classList.contains("delete-btn")) { // Changed to class selector
     const itemId = e.target.dataset.id;
+    console.log("Current user:", auth.currentUser);
     try {
       await deleteDoc(doc(db, "vault", itemId));
       console.log("Document deleted:", itemId);
     } catch (error) {
       console.error("Error deleting document:", error.message);
-      alert(`Failed to delete item: ${error.message}`);
+      alert(Failed to delete item: ${error.message});
     }
   }
 });
+
+
 
 // --- Family Plan Functions ---
 
@@ -184,8 +193,8 @@ const createFamily = async () => {
 
     if (!userDocSnap.exists()) {
       console.error("User document does not exist:", user.uid);
-      alert("Error: User document not found. Please try logging in again.");
-      return;
+      alert("Error: User document not found.  Please try logging in again.");
+      return; // Stop if the user doc is missing.
     }
 
     const familyDocRef = await addDoc(collection(db, 'families'), {
@@ -194,15 +203,15 @@ const createFamily = async () => {
       familyName: familyName,
     });
 
+    console.log("User ID to update:", user.uid);
     await updateDoc(userDocRef, {
       familyId: familyDocRef.id,
     });
-
     console.log('Family created!');
     alert("Family Created!");
   } catch (error) {
     console.error('Error creating family:', error.message);
-    alert(`Family creation failed: ${error.message}`);
+    alert(Family creation failed: ${error.message});
   }
 };
 document.getElementById("createFamilyBtn").onclick = createFamily;
@@ -240,7 +249,8 @@ const joinFamily = async () => {
     }
   } catch (error) {
     console.error('Error joining family:', error.message);
-    alert(`Family join failed: ${error.message}`);
+    alert(Family join failed: ${error.message});
   }
 };
 document.getElementById("joinFamilyBtn").onclick = joinFamily;
+will this work
