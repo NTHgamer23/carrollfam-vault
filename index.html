@@ -7,149 +7,106 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-    }
-    .container {
-      width: 300px;
-      display: flex;
-      flex-direction: column;
-    }
-    input, button {
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 16px;
-    }
-    #dashboard {
-      display: none;
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-
-<div id="auth">
-  <h2>Login</h2>
-  <div class="container">
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <button onclick="showSignup()">Go to Signup</button>
+<body class="bg-gray-100 text-gray-900">
+  <div id="auth-section" class="p-6 max-w-sm mx-auto mt-10 bg-white shadow-md rounded">
+    <h1 class="text-2xl font-bold mb-4">Vault</h1>
+    <input id="email" type="email" placeholder="Email" class="w-full mb-2 p-2 border rounded">
+    <input id="password" type="password" placeholder="Password" class="w-full mb-4 p-2 border rounded">
+    <button onclick="login()" class="w-full bg-blue-600 text-white p-2 rounded mb-2">Login</button>
+    <button onclick="signup()" class="w-full bg-green-600 text-white p-2 rounded">Sign Up</button>
   </div>
-</div>
 
-<div id="signup" style="display:none">
-  <h2>Signup</h2>
-  <div class="container">
-    <input id="signupEmail" type="email" placeholder="Email">
-    <input id="signupPassword" type="password" placeholder="Password">
-    <button onclick="signup()">Create Account</button>
-    <button onclick="showLogin()">Back to Login</button>
+  <div id="dashboard" class="hidden p-6 max-w-xl mx-auto mt-10 bg-white shadow-md rounded">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Your Vault</h2>
+      <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded">Logout</button>
+    </div>
+    <div class="mb-4">
+      <input id="vault-key" type="text" placeholder="Service (e.g. Gmail)" class="w-full mb-2 p-2 border rounded">
+      <input id="vault-password" type="text" placeholder="Password" class="w-full mb-2 p-2 border rounded">
+      <button onclick="savePassword()" class="bg-blue-500 text-white p-2 rounded">Save Password</button>
+    </div>
+    <ul id="vault-list" class="space-y-2"></ul>
   </div>
-</div>
 
-<div id="dashboard">
-  <h2>Vault</h2>
-  <div class="container">
-    <input id="vaultTitle" placeholder="Title">
-    <input id="vaultPassword" placeholder="Password">
-    <button onclick="addPassword()">Save</button>
-    <ul id="passwordList"></ul>
-    <button onclick="logout()">Logout</button>
-  </div>
-</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+      authDomain: "carroll-fam-v.firebaseapp.com",
+      projectId: "carroll-fam-v",
+      storageBucket: "carroll-fam-v.appspot.com",
+      messagingSenderId: "31202730208",
+      appId: "1:31202730208:web:424f6d013231a970ae3085",
+      measurementId: "G-6L6FH62554"
+    };
+    firebase.initializeApp(firebaseConfig);
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
-  authDomain: "carroll-fam-v.firebaseapp.com",
-  projectId: "carroll-fam-v",
-  storageBucket: "carroll-fam-v.appspot.com",
-  messagingSenderId: "31202730208",
-  appId: "1:31202730208:web:424f6d013231a970ae3085",
-  measurementId: "G-6L6FH62554",
-  databaseURL: "https://carroll-fam-v-default-rtdb.firebaseio.com"
-};
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+    const authSection = document.getElementById('auth-section');
+    const dashboard = document.getElementById('dashboard');
+    const vaultList = document.getElementById('vault-list');
 
-function showSignup() {
-  document.getElementById("auth").style.display = "none";
-  document.getElementById("signup").style.display = "block";
-}
+    function showDashboard() {
+      authSection.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      loadVault();
+    }
 
-function showLogin() {
-  document.getElementById("signup").style.display = "none";
-  document.getElementById("auth").style.display = "block";
-}
+    function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => showDashboard())
+        .catch(err => alert(err.message));
+    }
 
-function signup() {
-  const email = document.getElementById("signupEmail").value;
-  const password = document.getElementById("signupPassword").value;
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      alert("Account created!");
-      showLogin();
-    })
-    .catch(e => alert(e.message));
-}
+    function signup() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          alert("Account created. Please log in.");
+        })
+        .catch(err => alert(err.message));
+    }
 
-function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      loadDashboard();
-    })
-    .catch(e => alert(e.message));
-}
+    function logout() {
+      auth.signOut().then(() => {
+        dashboard.classList.add('hidden');
+        authSection.classList.remove('hidden');
+      });
+    }
 
-function loadDashboard() {
-  document.getElementById("auth").style.display = "none";
-  document.getElementById("signup").style.display = "none";
-  document.getElementById("dashboard").style.display = "block";
-  loadPasswords();
-}
+    function savePassword() {
+      const key = document.getElementById('vault-key').value;
+      const password = document.getElementById('vault-password').value;
+      const uid = auth.currentUser.uid;
+      if (key && password) {
+        db.ref('vault/' + uid + '/' + key).set(password);
+        loadVault();
+      }
+    }
 
-auth.onAuthStateChanged(user => {
-  if (user) loadDashboard();
-});
+    function loadVault() {
+      vaultList.innerHTML = '';
+      const uid = auth.currentUser.uid;
+      db.ref('vault/' + uid).once('value').then(snapshot => {
+        snapshot.forEach(child => {
+          const li = document.createElement('li');
+          li.textContent = `${child.key}: ${child.val()}`;
+          li.classList.add('border', 'p-2', 'rounded', 'bg-gray-100');
+          vaultList.appendChild(li);
+        });
+      });
+    }
 
-function logout() {
-  auth.signOut().then(() => {
-    location.reload();
-  });
-}
-
-function addPassword() {
-  const title = document.getElementById("vaultTitle").value;
-  const password = document.getElementById("vaultPassword").value;
-  const userId = auth.currentUser.uid;
-  db.ref("vaults/" + userId).push({ title, password });
-  document.getElementById("vaultTitle").value = "";
-  document.getElementById("vaultPassword").value = "";
-  loadPasswords();
-}
-
-function loadPasswords() {
-  const userId = auth.currentUser.uid;
-  db.ref("vaults/" + userId).once("value", snapshot => {
-    const list = document.getElementById("passwordList");
-    list.innerHTML = "";
-    snapshot.forEach(child => {
-      const li = document.createElement("li");
-      li.textContent = `${child.val().title}: ${child.val().password}`;
-      list.appendChild(li);
+    auth.onAuthStateChanged(user => {
+      if (user) showDashboard();
     });
-  });
-}
-</script>
+  </script>
 </body>
 </html>
-
