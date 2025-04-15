@@ -139,27 +139,6 @@ button.delete-button:hover:not(:disabled) {
   background-color: #b02a37;
 }
 
-/* Sync Controls Styling */
-.sync-controls {
-  margin: 20px 0;
-}
-
-.import-section {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
-}
-
-#import-code {
-  flex-grow: 1;
-}
-
-.import-section button {
-  width: auto;
-  padding: 12px 20px;
-  font-size: 1em;
-}
-
 /* Error Message Styling */
 #login-error-container {
   min-height: 1.2em;
@@ -216,11 +195,5 @@ button.delete-button:hover:not(:disabled) {
   input[type="password"],
   textarea {
     font-size: 16px; /* Prevent iOS zoom */
-  }
-  .import-section {
-    flex-direction: column;
-  }
-  .import-section button {
-    width: 100%;
   }
 }
