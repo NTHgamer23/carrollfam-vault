@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
@@ -40,7 +40,16 @@ const signUpUser = async () => {
   const email = document.getElementById("signupEmail").value;
   const password = document.getElementById("signupPassword").value;
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Create a user document in the "users" collection
+    await setDoc(doc(db, "users", user.uid), { // Use setDoc
+      email: email, // Store the email
+      familyId: null, // Initialize familyId
+      // Add any other user data you want to store here
+    });
+
     console.log("Account created successfully!");
     alert("Account created! Please log in."); // Provide login instruction
     signupSection.style.display = "none";
@@ -126,7 +135,7 @@ const showVault = () => {
 
   if (unsubscribe) unsubscribe();
   const currentUser = auth.currentUser;
-  if(currentUser){
+  if (currentUser) {
     const q = query(collection(db, "vault"), where("userId", "==", currentUser.uid));
     unsubscribe = onSnapshot(q, (snapshot) => {
       const items = [];
@@ -135,7 +144,7 @@ const showVault = () => {
       console.log("Snapshot updated");
     });
   }
-  
+
 };
 
 onAuthStateChanged(auth, user => {
@@ -183,7 +192,10 @@ const createFamily = async () => {
       members: [auth.currentUser.uid],
       familyName: familyName,
     });
-    await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+    //get the user.
+    const user = auth.currentUser;
+    console.log("User ID to update:", user.uid);
+    await updateDoc(doc(db, 'users', user.uid), {
       familyId: familyDocRef.id,
     });
     console.log('Family created!');
