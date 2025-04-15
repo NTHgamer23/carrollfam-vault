@@ -1,49 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault App</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="auth-section">
-    <h1>Login</h1>
+<div id="auth-section">
     <input type="email" id="loginEmail" placeholder="Email" />
     <input type="password" id="loginPassword" placeholder="Password" />
     <button id="loginBtn">Login</button>
-    <p>Don't have an account? <span id="showSignup">Sign Up</span></p>
-  </div>
+    <button id="showSignup">Sign up</button>
+</div>
 
-  <div id="signup-section" style="display: none;">
-    <h1>Sign Up</h1>
+<div id="signup-section" style="display: none;">
     <input type="email" id="signupEmail" placeholder="Email" />
     <input type="password" id="signupPassword" placeholder="Password" />
     <button id="signupBtn">Sign Up</button>
-    <p>Already have an account? <span id="showLogin">Log In</span></p>
-  </div>
+    <button id="showLogin">Back to Login</button>
+</div>
 
-  <div id="vault-section" style="display: none;">
-    <h1>Vault</h1>
-    <input type="text" id="vaultInput" placeholder="Enter item" />
-    <button id="addVaultBtn">Add to Vault</button>
+<div id="vault-section" style="display: none;">
+    <h3>Your Vault</h3>
+    <input type="text" id="vaultInput" placeholder="Enter vault item" />
+    <button id="addVaultBtn">Add Item</button>
     <div id="vaultItems"></div>
-    <button id="logoutBtn">Log Out</button>
+    <button id="logoutBtn">Logout</button>
+</div>
 
-    <div id="family-section">
-      <h2>Create/Join Family</h2>
-      <input type="text" id="familyNameInput" placeholder="Family Name" />
-      <button id="createFamilyBtn">Create Family</button>
+<div id="family-section">
+    <input type="text" id="familyNameInput" placeholder="Family Name" />
+    <button id="createFamilyBtn">Create Family</button>
+    <input type="text" id="familyIdInput" placeholder="Family ID" />
+    <button id="joinFamilyBtn">Join Family</button>
+</div>
 
-      <input type="text" id="familyIdInput" placeholder="Family ID" />
-      <button id="joinFamilyBtn">Join Family</button>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
