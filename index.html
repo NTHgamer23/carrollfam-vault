@@ -3,69 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Family Vault App</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js"></script>
+  <title>Firebase Auth and Vault</title>
 </head>
 <body>
-  <div class="container">
-    <div id="auth-section">
-      <h2>Login</h2>
-      <div class="form-group">
-        <label for="loginEmail">Email</label>
-        <input type="email" id="loginEmail" placeholder="Email" />
-      </div>
-      <div class="form-group">
-        <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" placeholder="Password" />
-      </div>
-      <button id="loginBtn" class="btn">Login</button>
-      <button id="showSignup" class="btn">Sign Up</button>
-      <div id="loginError" class="error-message"></div>
-    </div>
+  <h1>Welcome to the Vault App</h1>
 
-    <div id="signup-section">
-      <h2>Sign Up</h2>
-      <div class="form-group">
-        <label for="signupEmail">Email</label>
-        <input type="email" id="signupEmail" placeholder="Email" />
-      </div>
-      <div class="form-group">
-        <label for="signupPassword">Password</label>
-        <input type="password" id="signupPassword" placeholder="Password" />
-      </div>
-      <button id="signupBtn" class="btn">Sign Up</button>
-      <button id="showLogin" class="btn">Login</button>
-      <div id="signupError" class="error-message"></div>
-    </div>
-
-    <div id="vault-section">
-      <h2>Your Vault</h2>
-      <button id="logoutBtn" class="btn">Logout</button>
-      <div class="form-group">
-        <label for="vaultInput">Add item to vault</label>
-        <input type="text" id="vaultInput" placeholder="Add item to vault" />
-      </div>
-      <button id="addVaultBtn" class="btn">Add to Vault</button>
-      <div id="vaultItems"></div>
-
-      <h3>Create or Join Family</h3>
-      <div class="form-group">
-        <label for="familyNameInput">Family Name</label>
-        <input type="text" id="familyNameInput" placeholder="Enter Family Name" />
-        <button id="createFamilyBtn" class="btn">Create Family</button>
-      </div>
-      <div class="form-group">
-        <label for="familyIdInput">Family ID</label>
-        <input type="text" id="familyIdInput" placeholder="Enter Family ID" />
-        <button id="joinFamilyBtn" class="btn">Join Family</button>
-      </div>
-      <div id="familyError" class="error-message"></div>
-    </div>
+  <div id="auth-container">
+    <!-- Your sign-up/login form goes here -->
   </div>
 
-  <script src="script.js"></script>
+  <div id="vault-container" style="display:none;">
+    <!-- Your vault management interface goes here -->
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-auth.js';
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Your JavaScript logic (login, signup, vault management) goes here
+  </script>
 </body>
 </html>
+
