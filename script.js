@@ -1,73 +1,127 @@
-const SECRET_KEY = 'mysecretkey'; // Ensure this key is consistent
+// AES encryption/decryption with CryptoJS
+const secretKey = "Jn6119_270100663!#";  // Use a strong secret key (store securely)
 
-// Show the signup form
-function showSignupForm() {
-  document.getElementById('login-box').style.display = 'none';
-  document.getElementById('signup-box').style.display = 'block';
-  document.getElementById('login-error-container').style.display = 'none';
-  document.getElementById('signup-error-container').style.display = 'none';
+function encryptData(data) {
+  return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Show the login form
+function decryptData(data) {
+  const bytes = CryptoJS.AES.decrypt(data, secretKey);
+  return bytes.toString(CryptoJS.enc.Utf8);
+}
+
+// Show Login Form
 function showLoginForm() {
-  document.getElementById('signup-box').style.display = 'none';
-  document.getElementById('login-box').style.display = 'block';
-  document.getElementById('login-error-container').style.display = 'none';
-  document.getElementById('signup-error-container').style.display = 'none';
+  document.getElementById("signup-box").style.display = "none";
+  document.getElementById("login-box").style.display = "block";
+  document.getElementById("login-error").innerText = '';
 }
 
-// Handle user signup
-function signup(event) {
-  event.preventDefault();
-
-  const username = document.getElementById('signup-username').value;
-  const password = document.getElementById('signup-password').value;
-
-  if (!username || !password) {
-    document.getElementById('signup-error').textContent = 'Both fields are required!';
-    return;
-  }
-
-  const encryptedPassword = CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
-  localStorage.setItem(username, encryptedPassword);
-
-  alert('Account created successfully!');
-  showLoginForm();
+// Show Sign Up Form
+function showSignupForm() {
+  document.getElementById("login-box").style.display = "none";
+  document.getElementById("signup-box").style.display = "block";
+  document.getElementById("signup-error").innerText = '';
 }
 
-// Handle user login
+// Login Function
 function login(event) {
   event.preventDefault();
 
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
+  const username = document.getElementById("login-username").value;
+  const password = document.getElementById("login-password").value;
+  
+  const storedUsername = localStorage.getItem("username");
+  const storedPassword = localStorage.getItem("password");
 
-  if (!username || !password) {
-    document.getElementById('login-error').textContent = 'Both fields are required!';
-    return;
-  }
-
-  const encryptedPassword = localStorage.getItem(username);
-
-  if (!encryptedPassword) {
-    document.getElementById('login-error').textContent = 'User not found!';
-    return;
-  }
-
-  const decryptedPassword = CryptoJS.AES.decrypt(encryptedPassword, SECRET_KEY).toString(CryptoJS.enc.Utf8);
-
-  if (decryptedPassword === password) {
-    alert('Login successful!');
-    document.getElementById('login-box').style.display = 'none';
-    document.getElementById('vault').style.display = 'block';
+  if (storedUsername && storedPassword) {
+    if (username === storedUsername && decryptData(storedPassword) === password) {
+      document.getElementById("login-box").style.display = "none";
+      document.getElementById("vault").style.display = "block";
+    } else {
+      document.getElementById("login-error").innerText = "Incorrect username or password.";
+    }
   } else {
-    document.getElementById('login-error').textContent = 'Invalid credentials!';
+    document.getElementById("login-error").innerText = "Account does not exist.";
   }
 }
 
-// Handle user logout
-function logout() {
-  document.getElementById('vault').style.display = 'none';
-  document.getElementById('login-box').style.display = 'block';
+// Sign Up Function
+function signup(event) {
+  event.preventDefault();
+
+  const username = document.getElementById("signup-username").value;
+  const password = document.getElementById("signup-password").value;
+
+  // Store the username and encrypted password in localStorage
+  localStorage.setItem("username", username);
+  localStorage.setItem("password", encryptData(password));
+
+  // Automatically login after signup
+  showLoginForm();
+  alert("Account created successfully!");
 }
 
+// Logout Function
+function logout() {
+  document.getElementById("vault").style.display = "none";
+  document.getElementById("login-box").style.display = "block";
+}
+
+// Add Vault Item (This is a placeholder)
+function addVaultItem(event) {
+  event.preventDefault();
+
+  const website = document.getElementById("vault-website").value;
+  const username = document.getElementById("vault-username").value;
+  const password = document.getElementById("vault-password").value;
+  const note = document.getElementById("vault-note").value;
+
+  const vaultItem = {
+    website,
+    username,
+    password,
+    note
+  };
+
+  const vaultItems = JSON.parse(localStorage.getItem("vaultItems")) || [];
+  vaultItems.push(vaultItem);
+  localStorage.setItem("vaultItems", JSON.stringify(vaultItems));
+
+  renderVaultItems();
+}
+
+// Render Vault Items (Display)
+function renderVaultItems() {
+  const vaultItems = JSON.parse(localStorage.getItem("vaultItems")) || [];
+  const vaultItemsContainer = document.getElementById("vault-items");
+  vaultItemsContainer.innerHTML = "";
+
+  vaultItems.forEach((item, index) => {
+    const itemDiv = document.createElement("div");
+    itemDiv.innerHTML = `
+      <p><strong>Website:</strong> ${item.website}</p>
+      <p><strong>Username:</strong> ${item.username}</p>
+      <p><strong>Password:</strong> ${item.password}</p>
+      <p><strong>Note:</strong> ${item.note}</p>
+      <button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button>
+      <hr>
+    `;
+    vaultItemsContainer.appendChild(itemDiv);
+  });
+}
+
+// Delete Vault Item
+function deleteVaultItem(index) {
+  const vaultItems = JSON.parse(localStorage.getItem("vaultItems")) || [];
+  vaultItems.splice(index, 1);
+  localStorage.setItem("vaultItems", JSON.stringify(vaultItems));
+  renderVaultItems();
+}
+
+// Initial Call to Render Vault Items if Logged In
+if (localStorage.getItem("username") && localStorage.getItem("password")) {
+  document.getElementById("login-box").style.display = "none";
+  document.getElementById("vault").style.display = "block";
+  renderVaultItems();
+}
