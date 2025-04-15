@@ -103,7 +103,7 @@
 
     document.getElementById("addVaultBtn").onclick = async () => {
       const item = document.getElementById("vaultInput").value;
-      if (!item) return;
+      if (!item || !auth.currentUser) return; // Ensure user is authenticated before adding
       await addDoc(collection(db, "vault"), {
         item,
         userId: auth.currentUser.uid
