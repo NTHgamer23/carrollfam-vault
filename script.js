@@ -3,13 +3,13 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, on
 import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+  authDomain: "carroll-fam-v.firebaseapp.com",
+  projectId: "carroll-fam-v",
+  storageBucket: "carroll-fam-v.appspot.com",
+  messagingSenderId: "31202730208",
+  appId: "1:31202730208:web:424f6d013231a970ae3085",
+  measurementId: "G-6L6FH62554"
 };
 
 const app = initializeApp(firebaseConfig);
