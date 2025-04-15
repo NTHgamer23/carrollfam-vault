@@ -19,17 +19,24 @@ const db = getFirestore(app);
 const authSection = document.getElementById("auth-section");
 const signupSection = document.getElementById("signup-section");
 const vaultSection = document.getElementById("vault-section");
+const keySection = document.getElementById("key-section");
 const vaultItemsDiv = document.getElementById("vaultItems");
 
 document.getElementById("loginBtn").onclick = () => {
   const email = document.getElementById("loginEmail").value;
   const pass = document.getElementById("loginPassword").value;
-  signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+
+  signInWithEmailAndPassword(auth, email, pass)
+    .then(() => {
+      showKeyPrompt();
+    })
+    .catch(err => alert(err.message));
 };
 
 document.getElementById("signupBtn").onclick = () => {
   const email = document.getElementById("signupEmail").value;
   const pass = document.getElementById("signupPassword").value;
+
   createUserWithEmailAndPassword(auth, email, pass)
     .then(() => {
       alert("Account created!");
@@ -50,18 +57,15 @@ document.getElementById("showLogin").onclick = () => {
 };
 
 document.getElementById("logoutBtn").onclick = async () => {
-  if (unsubscribe) {
-    unsubscribe();
-    unsubscribe = null;
-    console.log("Snapshot listener unsubscribed.");
-  }
   await signOut(auth);
-  console.log("user logged out");
+  vaultSection.style.display = "none";
+  authSection.style.display = "block";
 };
 
 document.getElementById("addVaultBtn").onclick = async () => {
   const item = document.getElementById("vaultInput").value;
   if (!item) return;
+
   const currentUser = auth.currentUser;
   if (currentUser) {
     await addDoc(collection(db, "vault"), {
@@ -87,37 +91,51 @@ const renderVaultItems = (items) => {
 
 let unsubscribe = null;
 
-const showVault = () => {
+const showKeyPrompt = () => {
+  keySection.style.display = "block";
   authSection.style.display = "none";
   signupSection.style.display = "none";
-  vaultSection.style.display = "block";
+};
 
-  if (unsubscribe) unsubscribe();
-  const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
+document.getElementById("keySubmitBtn").onclick = () => {
+  const secretKey = document.getElementById("keyInput").value.trim();
+  if (secretKey === "gypsy") {
+    showVault();
+  } else {
+    alert("Incorrect key. Access denied.");
+    keySection.style.display = "none";
+    authSection.style.display = "block";
+  }
+};
+
+const showVault = () => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    alert("You need to log in to access the vault.");
+    return;
+  }
+
+  const q = query(collection(db, "vault"), where("userId", "==", currentUser.uid));
   unsubscribe = onSnapshot(q, (snapshot) => {
     const items = [];
     snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
     renderVaultItems(items);
-    console.log("snapshot updated")
   });
+
+  keySection.style.display = "none";
+  vaultSection.style.display = "block";
 };
 
 vaultItemsDiv.addEventListener("click", async (e) => {
   if (e.target.tagName === "BUTTON" && e.target.dataset.id) {
-    console.log("Current user:", auth.currentUser);
-    try {
-      await deleteDoc(doc(db, "vault", e.target.dataset.id));
-      console.log("Document deleted:", e.target.dataset.id);
-    } catch (error) {
-      console.error("Error deleting document:", error);
-      alert("Failed to delete item. Please check the console for details.");
-    }
+    await deleteDoc(doc(db, "vault", e.target.dataset.id));
   }
 });
 
 onAuthStateChanged(auth, user => {
-  if (user) showVault();
-  else {
+  if (user) {
+    keySection.style.display = "block";
+  } else {
     vaultSection.style.display = "none";
     authSection.style.display = "block";
   }
