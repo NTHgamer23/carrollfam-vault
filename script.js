@@ -1,4 +1,3 @@
-// script.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import {
   getAuth,
@@ -24,7 +23,7 @@ const firebaseConfig = {
   storageBucket: "carroll-fam-v.appspot.com",
   messagingSenderId: "31202730208",
   appId: "1:31202730208:web:424f6d013231a970ae3085",
-  measurementId: "G-6L6FH62554"
+  measurementId: "G-6L6FH62554",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -54,6 +53,7 @@ showSignup.onclick = () => {
   loginSection.style.display = "none";
   signupSection.style.display = "block";
 };
+
 showLogin.onclick = () => {
   signupSection.style.display = "none";
   loginSection.style.display = "block";
@@ -65,8 +65,9 @@ signupBtn.onclick = async () => {
   try {
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db, "vaults", userCred.user.uid), { items: [] });
-    alert("Account created successfully!");
+    alert("Account created!");
   } catch (err) {
+    console.error("Error signing up:", err);
     alert(err.message);
   }
 };
@@ -77,6 +78,7 @@ loginBtn.onclick = async () => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
+    console.error("Error logging in:", err);
     alert(err.message);
   }
 };
@@ -115,20 +117,11 @@ function watchVault(uid) {
 addVaultBtn.onclick = async () => {
   const item = vaultInput.value.trim();
   if (item && auth.currentUser) {
-    try {
-      const vaultRef = doc(db, "vaults", auth.currentUser.uid);
-      await updateDoc(vaultRef, {
-        items: arrayUnion(item),
-      });
-      console.log(`Item "${item}" added to the vault`);
-      vaultInput.value = ""; // Clear the input field
-    } catch (error) {
-      console.error("Error adding item to vault:", error.message);
-      alert("Failed to add item to vault. Try again.");
-    }
-  } else {
-    console.log("No item or user is not authenticated.");
-    alert("Please enter an item or log in.");
+    const vaultRef = doc(db, "vaults", auth.currentUser.uid);
+    await updateDoc(vaultRef, {
+      items: arrayUnion(item),
+    });
+    vaultInput.value = "";
   }
 };
 
