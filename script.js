@@ -19,7 +19,6 @@ const db = getFirestore(app);
 const authSection = document.getElementById("auth-section");
 const signupSection = document.getElementById("signup-section");
 const vaultSection = document.getElementById("vault-section");
-const keySection = document.getElementById("key-section");
 const vaultItemsDiv = document.getElementById("vaultItems");
 
 document.getElementById("loginBtn").onclick = () => {
@@ -28,9 +27,15 @@ document.getElementById("loginBtn").onclick = () => {
 
   signInWithEmailAndPassword(auth, email, pass)
     .then(() => {
-      showKeyPrompt(); // Only show after successful login
+      const key = prompt("Enter the secret key:");
+      if (key === "gypsy") {
+        showVault();
+      } else {
+        alert("Incorrect key. Access denied.");
+        signOut(auth);
+      }
     })
-    .catch(err => alert("Login failed: " + err.message));
+    .catch(err => alert(err.message));
 };
 
 document.getElementById("signupBtn").onclick = () => {
@@ -57,15 +62,16 @@ document.getElementById("showLogin").onclick = () => {
 };
 
 document.getElementById("logoutBtn").onclick = async () => {
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+  }
   await signOut(auth);
-  vaultSection.style.display = "none";
-  authSection.style.display = "block";
 };
 
 document.getElementById("addVaultBtn").onclick = async () => {
   const item = document.getElementById("vaultInput").value;
   if (!item) return;
-
   const currentUser = auth.currentUser;
   if (currentUser) {
     await addDoc(collection(db, "vault"), {
@@ -89,48 +95,36 @@ const renderVaultItems = (items) => {
   });
 };
 
-const showKeyPrompt = () => {
-  authSection.style.display = "none";
-  signupSection.style.display = "none";
-  keySection.style.display = "block";
-};
-
-document.getElementById("keySubmitBtn").onclick = () => {
-  const secretKey = document.getElementById("keyInput").value.trim();
-  if (secretKey === "gypsy") {
-    showVault();
-  } else {
-    alert("Wrong key.");
-    keySection.style.display = "none";
-    authSection.style.display = "block";
-  }
-};
+let unsubscribe = null;
 
 const showVault = () => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) return;
+  authSection.style.display = "none";
+  signupSection.style.display = "none";
+  vaultSection.style.display = "block";
 
-  const q = query(collection(db, "vault"), where("userId", "==", currentUser.uid));
-  onSnapshot(q, (snapshot) => {
+  if (unsubscribe) unsubscribe();
+
+  const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
+  unsubscribe = onSnapshot(q, (snapshot) => {
     const items = [];
     snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
     renderVaultItems(items);
   });
-
-  keySection.style.display = "none";
-  vaultSection.style.display = "block";
 };
 
 vaultItemsDiv.addEventListener("click", async (e) => {
   if (e.target.tagName === "BUTTON" && e.target.dataset.id) {
-    await deleteDoc(doc(db, "vault", e.target.dataset.id));
+    try {
+      await deleteDoc(doc(db, "vault", e.target.dataset.id));
+    } catch (error) {
+      alert("Failed to delete item.");
+    }
   }
 });
 
 onAuthStateChanged(auth, user => {
   if (!user) {
     vaultSection.style.display = "none";
-    keySection.style.display = "none";
     authSection.style.display = "block";
   }
 });
