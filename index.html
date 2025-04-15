@@ -3,236 +3,306 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault</title>
+  <title>Family Vault App</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js"></script>
+
   <style>
-    /* General Body Styling */
     body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      color: #333;
+      font-family: Arial, sans-serif;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border: 1px solid #ddd;
-    }
-
-    h2 {
-      text-align: center;
-      color: #333;
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-
-    /* Inputs and Buttons Styling */
-    input[type="email"], input[type="password"], input[type="text"] {
-      width: 100%;
-      padding: 12px 15px;
-      margin-bottom: 15px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
-
-    input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
-      border-color: #4CAF50;
-      outline: none;
-    }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 14px;
-    }
-
-    /* Layout Adjustments */
     #auth-section, #signup-section, #vault-section {
       display: none;
     }
-
-    #auth-section.active, #signup-section.active, #vault-section.active {
-      display: block;
-    }
-
-    /* Vault Section Styling */
-    #vaultItems {
-      margin-bottom: 15px;
-    }
-
-    .vault-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #f9f9f9;
+    .btn {
       padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .vault-item span {
-      font-size: 16px;
-      color: #333;
-    }
-
-    .delete-btn {
-      background-color: #f44336;
-      padding: 5px 10px;
-      font-size: 12px;
-      border-radius: 3px;
+      margin: 10px;
+      cursor: pointer;
+      background-color: #4CAF50;
       color: white;
       border: none;
-      cursor: pointer;
-    }
-
-    .delete-btn:hover {
-      background-color: #e53935;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 600px) {
-      .container {
-        padding: 15px;
-      }
-
-      input[type="email"], input[type="password"], input[type="text"], button {
-        font-size: 14px;
-      }
-
-      button {
-        padding: 8px 15px;
-      }
-    }
-
-    /* Error / Success Messages */
-    .alert {
-      padding: 10px;
-      margin-top: 15px;
-      background-color: #f44336;
-      color: white;
       border-radius: 5px;
-      text-align: center;
     }
-
-    .alert-success {
-      background-color: #4CAF50;
+    .btn-danger {
+      background-color: red;
     }
-
-    .alert-info {
-      background-color: #2196F3;
+    .vault-item {
+      margin: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Vault</h2>
+  <div id="auth-section">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button id="loginBtn" class="btn">Login</button>
+    <button id="showSignup" class="btn">Sign Up</button>
+  </div>
 
-    <!-- Auth Section -->
-    <div id="auth-section" class="active">
-      <input type="email" id="auth-email" placeholder="Enter your email" />
-      <input type="password" id="auth-password" placeholder="Enter your password" />
-      <button onclick="login()">Login</button>
-      <p>Don't have an account? <span onclick="showSignup()">Sign Up</span></p>
-    </div>
+  <div id="signup-section">
+    <h2>Sign Up</h2>
+    <input type="email" id="signupEmail" placeholder="Email" />
+    <input type="password" id="signupPassword" placeholder="Password" />
+    <button id="signupBtn" class="btn">Sign Up</button>
+    <button id="showLogin" class="btn">Login</button>
+  </div>
 
-    <!-- Signup Section -->
-    <div id="signup-section">
-      <input type="email" id="signup-email" placeholder="Enter your email" />
-      <input type="password" id="signup-password" placeholder="Enter your password" />
-      <button onclick="signup()">Sign Up</button>
-      <p>Already have an account? <span onclick="showLogin()">Login</span></p>
-    </div>
+  <div id="vault-section">
+    <h2>Your Vault</h2>
+    <button id="logoutBtn" class="btn">Logout</button>
+    <input type="text" id="vaultInput" placeholder="Add item to vault" />
+    <button id="addVaultBtn" class="btn">Add to Vault</button>
+    <div id="vaultItems"></div>
 
-    <!-- Vault Section -->
-    <div id="vault-section">
-      <input type="text" id="vault-item" placeholder="Add an item" />
-      <button onclick="addVaultItem()">Add Item</button>
-      <div id="vaultItems"></div>
-    </div>
+    <!-- Family Functions -->
+    <h3>Create or Join Family</h3>
+    <button id="createFamilyBtn" class="btn">Create Family</button>
+    <button id="joinFamilyBtn" class="btn">Join Family</button>
+    <input type="text" id="familyIdInput" placeholder="Enter Family ID" />
+    <input type="text" id="familyNameInput" placeholder="Enter Family Name" />
   </div>
 
   <script>
-    let loggedIn = false;
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+      authDomain: "carroll-fam-v.firebaseapp.com",
+      projectId: "carroll-fam-v",
+      storageBucket: "carroll-fam-v.appspot.com",
+      messagingSenderId: "31202730208",
+      appId: "1:31202730208:web:424f6d013231a970ae3085",
+      measurementId: "G-6L6FH62554"
+    };
+    
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    function showLogin() {
-      document.getElementById('signup-section').style.display = 'none';
-      document.getElementById('auth-section').style.display = 'block';
-    }
+    // DOM Elements
+    const authSection = document.getElementById("auth-section");
+    const signupSection = document.getElementById("signup-section");
+    const vaultSection = document.getElementById("vault-section");
+    const vaultItemsDiv = document.getElementById("vaultItems");
 
-    function showSignup() {
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('signup-section').style.display = 'block';
-    }
+    // Function for user login
+    const loginUser = async () => {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        console.log("User logged in successfully!");
+      } catch (error) {
+        console.error("Login Error:", error.message);
+        alert("Login Failed: " + error.message);
+      }
+    };
+    document.getElementById("loginBtn").onclick = loginUser;
 
-    function login() {
-      const email = document.getElementById('auth-email').value;
-      const password = document.getElementById('auth-password').value;
+    // Function for user signup
+    const signUpUser = async () => {
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+      try {
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
 
-      // Perform authentication logic (e.g., API call)
+        await firebase.firestore().collection("users").doc(user.uid).set({
+          email: email,
+          familyId: null,
+        });
 
-      loggedIn = true;
-      showVault();
-    }
+        console.log("Account created successfully!");
+        alert("Account created! Please log in.");
+        signupSection.style.display = "none";
+        authSection.style.display = "block";
+      } catch (error) {
+        console.error("Signup Error:", error.message);
+        alert("Signup Failed: " + error.message);
+      }
+    };
+    document.getElementById("signupBtn").onclick = signUpUser;
 
-    function signup() {
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
+    document.getElementById("showSignup").onclick = () => {
+      authSection.style.display = "none";
+      signupSection.style.display = "block";
+    };
 
-      // Perform signup logic (e.g., API call)
+    document.getElementById("showLogin").onclick = () => {
+      signupSection.style.display = "none";
+      authSection.style.display = "block";
+    };
 
-      loggedIn = true;
-      showVault();
-    }
+    // Function for user logout
+    const logoutUser = async () => {
+      try {
+        await firebase.auth().signOut();
+        console.log("User logged out successfully!");
+      } catch (error) {
+        console.error("Logout Error:", error.message);
+        alert("Logout Failed: " + error.message);
+      }
+    };
+    document.getElementById("logoutBtn").onclick = logoutUser;
 
-    function showVault() {
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('signup-section').style.display = 'none';
-      document.getElementById('vault-section').style.display = 'block';
-    }
+    // Function to add item to vault
+    const addVaultItem = async () => {
+      const item = document.getElementById("vaultInput").value;
+      if (!item) {
+        alert("Please enter an item to add to the vault.");
+        return;
+      }
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        try {
+          await firebase.firestore().collection("vault").add({
+            item,
+            userId: currentUser.uid
+          });
+          document.getElementById("vaultInput").value = "";
+          console.log("Item added to vault:", item);
+        } catch (error) {
+          console.error("Error adding item:", error.message);
+          alert("Failed to add item: " + error.message);
+        }
+      }
+    };
+    document.getElementById("addVaultBtn").onclick = addVaultItem;
 
-    function addVaultItem() {
-      const item = document.getElementById('vault-item').value;
-      if (!item) return;
+    // Function to render vault items
+    const renderVaultItems = (items) => {
+      vaultItemsDiv.innerHTML = "";
+      items.forEach(({ id, item }) => {
+        const div = document.createElement("div");
+        div.className = "vault-item";
+        div.innerHTML = `
+          <span>${item}</span>
+          <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">Delete</button>
+        `;
+        vaultItemsDiv.appendChild(div);
+      });
+    };
 
-      const vaultItems = document.getElementById('vaultItems');
-      const newItem = document.createElement('div');
-      newItem.classList.add('vault-item');
-      newItem.innerHTML = `<span>${item}</span><button class="delete-btn" onclick="deleteItem(this)">Delete</button>`;
-      vaultItems.appendChild(newItem);
+    // Function to show vault
+    const showVault = () => {
+      authSection.style.display = "none";
+      signupSection.style.display = "none";
+      vaultSection.style.display = "block";
 
-      document.getElementById('vault-item').value = '';
-    }
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        const q = firebase.firestore().collection("vault").where("userId", "==", currentUser.uid);
+        q.onSnapshot((snapshot) => {
+          const items = [];
+          snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+          renderVaultItems(items);
+          console.log("Snapshot updated");
+        });
+      }
+    };
 
-    function deleteItem(button) {
-      button.parentElement.remove();
-    }
+    // Handle Auth State Changes
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        showVault();
+      } else {
+        vaultSection.style.display = "none";
+        authSection.style.display = "block";
+      }
+    });
+
+    // Event listener for deleting vault items
+    vaultItemsDiv.addEventListener("click", async (e) => {
+      if (e.target.classList.contains("delete-btn")) {
+        const itemId = e.target.dataset.id;
+        try {
+          await firebase.firestore().collection("vault").doc(itemId).delete();
+          console.log("Document deleted:", itemId);
+        } catch (error) {
+          console.error("Error deleting document:", error.message);
+          alert("Failed to delete item: " + error.message);
+        }
+      }
+    });
+
+    // --- Family Plan Functions ---
+    // Function to create a family
+    const createFamily = async () => {
+      const familyName = document.getElementById("familyNameInput").value;
+      if (!familyName) {
+        alert("Please enter a family name.");
+        return;
+      }
+      if (!firebase.auth().currentUser) {
+        alert("You must be logged in to create a family.");
+        return;
+      }
+      try {
+        const user = firebase.auth().currentUser;
+        const userDocRef = firebase.firestore().doc('users/' + user.uid);
+        const familyDocRef = await firebase.firestore().collection('families').add({
+          ownerUid: user.uid,
+          members: [user.uid],
+          familyName: familyName,
+        });
+
+        await userDocRef.update({
+          familyId: familyDocRef.id,
+        });
+
+        console.log('Family created!');
+        alert("Family Created!");
+      } catch (error) {
+        console.error("Error creating family:", error.message);
+        alert("Failed to create family: " + error.message);
+      }
+    };
+    document.getElementById("createFamilyBtn").onclick = createFamily;
+
+    // Function to join a family
+    const joinFamily = async () => {
+      const familyId = document.getElementById("familyIdInput").value;
+      if (!familyId) {
+        alert("Please enter a valid Family ID.");
+        return;
+      }
+      if (!firebase.auth().currentUser) {
+        alert("You must be logged in to join a family.");
+        return;
+      }
+      try {
+        const user = firebase.auth().currentUser;
+        const userDocRef = firebase.firestore().doc('users/' + user.uid);
+        const familyDocRef = firebase.firestore().doc('families/' + familyId);
+        const familyDoc = await familyDocRef.get();
+
+        if (!familyDoc.exists) {
+          alert("Family not found.");
+          return;
+        }
+
+        await familyDocRef.update({
+          members: firebase.firestore.FieldValue.arrayUnion(user.uid),
+        });
+
+        await userDocRef.update({
+          familyId: familyId,
+        });
+
+        console.log('Joined family!');
+        alert("Successfully joined the family!");
+      } catch (error) {
+        console.error("Error joining family:", error.message);
+        alert("Failed to join family: " + error.message);
+      }
+    };
+    document.getElementById("joinFamilyBtn").onclick = joinFamily;
   </script>
 </body>
 </html>
+
