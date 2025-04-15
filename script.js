@@ -21,9 +21,9 @@ function isAuthenticated() {
 // Write data to Firestore (only if the user is authenticated)
 async function writeToFirestore(userId, data) {
   if (isAuthenticated()) {
-    const userDocRef = doc(db, 'users', userId); // Reference to the user's document
+    const userDocRef = doc(db, 'users', userId);
     try {
-      await setDoc(userDocRef, data); // Write data to Firestore
+      await setDoc(userDocRef, data);
       console.log('Document written!');
     } catch (error) {
       console.error('Error writing document:', error);
@@ -36,11 +36,11 @@ async function writeToFirestore(userId, data) {
 // Read data from Firestore (only if the user is authenticated)
 async function readFromFirestore(userId) {
   if (isAuthenticated()) {
-    const userDocRef = doc(db, 'users', userId); // Reference to the user's document
+    const userDocRef = doc(db, 'users', userId);
     try {
-      const docSnap = await getDoc(userDocRef); // Get the document snapshot
+      const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
-        console.log('Document data:', docSnap.data()); // Log the document data
+        console.log('Document data:', docSnap.data());
       } else {
         console.log('No such document!');
       }
@@ -72,6 +72,7 @@ function setupSnapshotListener(userId) {
         console.error('Snapshot listener error:', error);
       }
     );
+    console.log("Snapshot listener set up.");
   }
 }
 
@@ -81,9 +82,12 @@ async function logout() {
     await signOut(auth);
     console.log('User logged out successfully.');
     if (unsubscribeSnapshotListener) {
+      console.log('Attempting to unsubscribe snapshot listener.');
       unsubscribeSnapshotListener();
       unsubscribeSnapshotListener = null;
       console.log('Snapshot listener unsubscribed.');
+    } else {
+      console.log('No snapshot listener to unsubscribe.');
     }
     // Perform any necessary UI updates or redirects here.
   } catch (error) {
@@ -104,15 +108,15 @@ onAuthStateChanged(auth, (user) => {
     };
 
     // Write data for the logged-in user to their document
-    writeToFirestore(user.uid, exampleData); // Use user's UID for data write
+    writeToFirestore(user.uid, exampleData);
 
     // Optionally, read data for the logged-in user
-    readFromFirestore(user.uid); // Read the user's data from Firestore
+    readFromFirestore(user.uid);
 
     // Set up snapshot listener
     setupSnapshotListener(user.uid);
   } else {
-    console.log('No user logged in');
+    console.log('No user logged in. currentUser:', auth.currentUser);
     // If you have any UI updates to do when the user logs out, do them here.
   }
 });
