@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>CarrollFam Vault - Demo</title>
-  <link rel="stylesheet" href="styles.css?v=1.4" />
+  <link rel="stylesheet" href="styles.css?v=1.9" />
 </head>
 <body>
   <div id="login-box">
@@ -29,6 +29,7 @@
 
   <div id="vault" style="display: none;">
     <h2>Vault Contents</h2>
+    <p class="storage-notice">Items stored in memory, sync with code.</p>
     <form id="vault-form" onsubmit="addVaultItem(event)">
       <div>
         <label for="vault-website" class="sr-only">Website</label>
@@ -36,7 +37,7 @@
       </div>
       <div>
         <label for="vault-username" class="sr-only">Username</label>
-      <input type="text" id="vault-username" placeholder="Username" required autocomplete="off" />
+        <input type="text" id="vault-username" placeholder="Username" required autocomplete="off" />
       </div>
       <div>
         <label for="vault-password" class="sr-only">Password</label>
@@ -51,9 +52,17 @@
     <div id="vault-items">
       <!-- Dynamically populated -->
     </div>
+    <div class="sync-controls">
+      <button type="button" onclick="exportVault()">Export Vault</button>
+      <div class="import-section">
+        <label for="import-code" class="sr-only">Import Sync Code</label>
+        <input type="text" id="import-code" placeholder="Paste sync code" autocomplete="off" />
+        <button type="button" onclick="importVault()">Import Vault</button>
+      </div>
+    </div>
     <button type="button" onclick="logout()">Logout</button>
   </div>
 
-  <script src="script.js?v=1.4"></script>
+  <script src="script.js?v=1.9"></script>
 </body>
 </html>
