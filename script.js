@@ -1,63 +1,109 @@
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "carroll-fam-v.firebaseapp.com",
-  projectId: "carroll-fam-v",
-  storageBucket: "carroll-fam-v.appspot.com",
-  messagingSenderId: "31202730208",
-  appId: "1:31202730208:web:424f6d013231a970ae3085",
-  measurementId: "G-6L6FH62554"
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
+
+// Initialize Firebase
+const auth = getAuth();
+const db = getFirestore();
+
+// DOM Elements
+const vaultSection = document.getElementById('vaultSection');
+const authSection = document.getElementById('authSection');
+const signupSection = document.getElementById('signupSection');
+const logoutBtn = document.getElementById('logoutBtn');
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+const vaultItemsList = document.getElementById('vaultItemsList'); // Assume this is for displaying vault items
+
+let unsubscribe = null; // Store the unsubscribe function globally
+
+// Handle user logout
+logoutBtn.onclick = () => {
+  signOut(auth).then(() => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+    vaultSection.style.display = "none";
+    authSection.style.display = "block";
+  }).catch(err => {
+    console.error("Error signing out:", err);
+  });
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+// Auth state change listener
+onAuthStateChanged(auth, user => {
+  if (user) {
+    showVault(); // Show the vault if authenticated
+  } else {
+    vaultSection.style.display = "none";
+    authSection.style.display = "block";
+    if (unsubscribe) {
+      unsubscribe();
+    }
+  }
+});
 
-function showSignup() {
-  document.getElementById('login-box').style.display = 'none';
-  document.getElementById('signup-box').style.display = 'block';
-}
+// Function to display the vault and set up Firestore listener
+const showVault = () => {
+  authSection.style.display = "none";
+  signupSection.style.display = "none";
+  vaultSection.style.display = "block";
 
-function showLogin() {
-  document.getElementById('signup-box').style.display = 'none';
-  document.getElementById('login-box').style.display = 'block';
-}
+  if (unsubscribe) {
+    unsubscribe();
+  }
 
-// Login Function
-function login(event) {
-  event.preventDefault();
-  const email = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      document.getElementById('login-box').style.display = 'none';
-      document.getElementById('vault').style.display = 'block';
-    })
-    .catch((error) => {
-      document.getElementById('login-error').innerText = error.message;
-    });
-}
-
-// Sign Up Function
-function signUp(event) {
-  event.preventDefault();
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      showLogin();
-      alert('Your account has been created! You can now log in.');
-    })
-    .catch((error) => {
-      document.getElementById('signup-error').innerText = error.message;
-    });
-}
-
-// Logout Function
-function logout() {
-  auth.signOut().then(() => {
-    document.getElementById('vault').style.display = 'none';
-    document.getElementById('login-box').style.display = 'block';
+  const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
+  unsubscribe = onSnapshot(q, (snapshot) => {
+    const items = [];
+    snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+    renderVaultItems(items); // Call function to render vault items
   });
-}
+};
+
+// Function to render the vault items
+const renderVaultItems = (items) => {
+  vaultItemsList.innerHTML = ''; // Clear previous items
+  items.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = `Item ID: ${item.id}, Data: ${JSON.stringify(item)}`;
+    vaultItemsList.appendChild(li);
+  });
+};
+
+// Login form submission
+loginForm.onsubmit = (e) => {
+  e.preventDefault();
+  const email = emailInput.value;
+  const password = passwordInput.value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Login successful
+      console.log('Logged in as:', userCredential.user);
+      emailInput.value = '';
+      passwordInput.value = '';
+    })
+    .catch((error) => {
+      console.error('Error during login:', error);
+    });
+};
+
+// Signup form submission
+signupForm.onsubmit = (e) => {
+  e.preventDefault();
+  const email = emailInput.value;
+  const password = passwordInput.value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Sign up successful
+      console.log('Signed up as:', userCredential.user);
+      emailInput.value = '';
+      passwordInput.value = '';
+    })
+    .catch((error) => {
+      console.error('Error during signup:', error);
+    });
+};
