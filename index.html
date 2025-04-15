@@ -3,158 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vault</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 500px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-
-    .input-group {
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .input-group input {
-      padding: 10px;
-      width: 75%;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
-
-    .input-group button {
-      padding: 10px;
-      width: 20%;
-      border-radius: 5px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .input-group button:hover {
-      background-color: #0056b3;
-    }
-
-    .vault-items {
-      margin-top: 20px;
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .vault-item {
-      background-color: #f9f9f9;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .auth-section {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-
-    .auth-section button {
-      background-color: #28a745;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 5px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .auth-section button:hover {
-      background-color: #218838;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
+  <title>Vault App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
+  <div id="auth-section">
+    <h1>Login</h1>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <p>Don't have an account? <span id="showSignup">Sign Up</span></p>
+  </div>
+
+  <div id="signup-section" style="display: none;">
+    <h1>Sign Up</h1>
+    <input type="email" id="signupEmail" placeholder="Email" />
+    <input type="password" id="signupPassword" placeholder="Password" />
+    <button id="signupBtn">Sign Up</button>
+    <p>Already have an account? <span id="showLogin">Log In</span></p>
+  </div>
+
+  <div id="vault-section" style="display: none;">
     <h1>Vault</h1>
+    <input type="text" id="vaultInput" placeholder="Enter item" />
+    <button id="addVaultBtn">Add to Vault</button>
+    <div id="vaultItems"></div>
+    <button id="logoutBtn">Log Out</button>
 
-    <!-- Auth Sections -->
-    <div id="auth-section" class="auth-section">
-      <div>
-        <label for="loginEmail">Email:</label>
-        <input type="email" id="loginEmail" placeholder="Enter your email" />
-      </div>
-      <div>
-        <label for="loginPassword">Password:</label>
-        <input type="password" id="loginPassword" placeholder="Enter your password" />
-      </div>
-      <button id="loginBtn">Login</button>
-      <button id="showSignup">Sign Up</button>
-    </div>
+    <div id="family-section">
+      <h2>Create/Join Family</h2>
+      <input type="text" id="familyNameInput" placeholder="Family Name" />
+      <button id="createFamilyBtn">Create Family</button>
 
-    <div id="signup-section" class="auth-section hidden">
-      <div>
-        <label for="signupEmail">Email:</label>
-        <input type="email" id="signupEmail" placeholder="Enter your email" />
-      </div>
-      <div>
-        <label for="signupPassword">Password:</label>
-        <input type="password" id="signupPassword" placeholder="Enter your password" />
-      </div>
-      <button id="signupBtn">Sign Up</button>
-      <button id="showLogin">Already have an account? Login</button>
-    </div>
-
-    <!-- Vault Section -->
-    <div id="vault-section" class="hidden">
-      <h2>Your Vault</h2>
-      <div class="input-group">
-        <input type="text" id="vaultInput" placeholder="Add an item to your vault" />
-        <button id="addVaultBtn">Add</button>
-      </div>
-      <ul id="vaultItems" class="vault-items"></ul>
-      <button id="logoutBtn">Logout</button>
-    </div>
-
-    <!-- Family Section -->
-    <div id="family-section" class="hidden">
-      <h2>Family Vault</h2>
-      <div class="input-group">
-        <input type="text" id="familyNameInput" placeholder="Enter family name" />
-        <button id="createFamilyBtn">Create Family</button>
-      </div>
-      <div class="input-group">
-        <input type="text" id="familyIdInput" placeholder="Enter family ID" />
-        <button id="joinFamilyBtn">Join Family</button>
-      </div>
+      <input type="text" id="familyIdInput" placeholder="Family ID" />
+      <button id="joinFamilyBtn">Join Family</button>
     </div>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
-
-
