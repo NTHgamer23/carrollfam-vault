@@ -3,11 +3,13 @@ import {
   doc,
   setDoc,
   getDoc,
-  updateDoc,
   collection,
   onSnapshot,
+  signOut,
+  getAuth,
+  onAuthStateChanged,
 } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 // Initialize Firestore and Firebase Auth
 const db = getFirestore();
@@ -41,14 +43,18 @@ async function readFromFirestore(userId) {
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
         console.log('Document data:', docSnap.data());
+        return docSnap.data(); // Return the data if needed.
       } else {
         console.log('No such document!');
+        return null;
       }
     } catch (error) {
       console.error('Error reading document:', error);
+      return null;
     }
   } else {
     console.error('User is not authenticated.');
+    return null;
   }
 }
 
@@ -72,7 +78,7 @@ function setupSnapshotListener(userId) {
         console.error('Snapshot listener error:', error);
       }
     );
-    console.log("Snapshot listener set up.");
+    console.log('Snapshot listener set up.');
   }
 }
 
