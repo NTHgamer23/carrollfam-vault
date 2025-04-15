@@ -28,9 +28,9 @@ document.getElementById("loginBtn").onclick = () => {
 
   signInWithEmailAndPassword(auth, email, pass)
     .then(() => {
-      showKeyPrompt();
+      showKeyPrompt(); // Only show after successful login
     })
-    .catch(err => alert(err.message));
+    .catch(err => alert("Login failed: " + err.message));
 };
 
 document.getElementById("signupBtn").onclick = () => {
@@ -89,12 +89,10 @@ const renderVaultItems = (items) => {
   });
 };
 
-let unsubscribe = null;
-
 const showKeyPrompt = () => {
-  keySection.style.display = "block";
   authSection.style.display = "none";
   signupSection.style.display = "none";
+  keySection.style.display = "block";
 };
 
 document.getElementById("keySubmitBtn").onclick = () => {
@@ -102,7 +100,7 @@ document.getElementById("keySubmitBtn").onclick = () => {
   if (secretKey === "gypsy") {
     showVault();
   } else {
-    alert("Incorrect key. Access denied.");
+    alert("Wrong key.");
     keySection.style.display = "none";
     authSection.style.display = "block";
   }
@@ -110,13 +108,10 @@ document.getElementById("keySubmitBtn").onclick = () => {
 
 const showVault = () => {
   const currentUser = auth.currentUser;
-  if (!currentUser) {
-    alert("You need to log in to access the vault.");
-    return;
-  }
+  if (!currentUser) return;
 
   const q = query(collection(db, "vault"), where("userId", "==", currentUser.uid));
-  unsubscribe = onSnapshot(q, (snapshot) => {
+  onSnapshot(q, (snapshot) => {
     const items = [];
     snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
     renderVaultItems(items);
@@ -133,10 +128,10 @@ vaultItemsDiv.addEventListener("click", async (e) => {
 });
 
 onAuthStateChanged(auth, user => {
-  if (user) {
-    keySection.style.display = "block";
-  } else {
+  if (!user) {
     vaultSection.style.display = "none";
+    keySection.style.display = "none";
     authSection.style.display = "block";
   }
 });
+
