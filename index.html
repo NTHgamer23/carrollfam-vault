@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>CarrollFam Vault - Demo</title>
   <link rel="stylesheet" href="styles.css?v=2.0" />
-  <script src="https://crypto-js.googlecode.com/svn/tags/3.1.9-1/build/rollups/aes.js"></script>
 </head>
 <body>
   <div id="login-box">
@@ -14,27 +13,25 @@
 
     <form id="login-form" onsubmit="login(event)">
       <div>
-        <label for="login-username" class="sr-only">Username</label>
-        <input type="text" id="login-username" placeholder="Username" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <label for="username" class="sr-only">Username</label>
+        <input type="text" id="username" placeholder="Username" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
       <div>
-        <label for="login-password" class="sr-only">Password</label>
-        <input type="password" id="login-password" placeholder="Password" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" placeholder="Password" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
       <button type="submit">Login</button>
       <div id="login-error-container" aria-live="polite">
         <p id="login-error" class="error-message"></p>
       </div>
     </form>
-
-    <p>Don't have an account? <a href="javascript:void(0);" onclick="showSignupForm()">Sign Up</a></p>
+    <p><a href="#" onclick="showSignUpForm()">Create an account</a></p>
   </div>
 
-  <div id="signup-box" style="display: none;">
+  <div id="signup-box" style="display:none;">
     <h1>Sign Up</h1>
-    <p class="description">Create a new account.</p>
-
-    <form id="signup-form" onsubmit="signup(event)">
+    <p class="description">Create your account to access the vault.</p>
+    <form id="signup-form" onsubmit="signUp(event)">
       <div>
         <label for="signup-username" class="sr-only">Username</label>
         <input type="text" id="signup-username" placeholder="Username" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -48,8 +45,7 @@
         <p id="signup-error" class="error-message"></p>
       </div>
     </form>
-
-    <p>Already have an account? <a href="javascript:void(0);" onclick="showLoginForm()">Login</a></p>
+    <p><a href="#" onclick="showLoginForm()">Back to Login</a></p>
   </div>
 
   <div id="vault" style="display: none;">
@@ -80,6 +76,9 @@
     <button type="button" onclick="logout()">Logout</button>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
   <script src="script.js?v=2.0"></script>
 </body>
 </html>
+
