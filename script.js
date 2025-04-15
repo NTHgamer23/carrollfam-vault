@@ -1,77 +1,111 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
   authDomain: "carroll-fam-v.firebaseapp.com",
-  databaseURL: "https://carroll-fam-v-default-rtdb.firebaseio.com",
   projectId: "carroll-fam-v",
-  storageBucket: "carroll-fam-v.firebasestorage.app",
+  storageBucket: "carroll-fam-v.appspot.com",
   messagingSenderId: "31202730208",
   appId: "1:31202730208:web:424f6d013231a970ae3085",
   measurementId: "G-6L6FH62554"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-// Initialize Firebase Authentication and Firestore
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Get DOM elements
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
+const authSection = document.getElementById("auth-section");
+const signupSection = document.getElementById("signup-section");
+const vaultSection = document.getElementById("vault-section");
+const vaultItemsDiv = document.getElementById("vaultItems");
 
-// Handle Google login
-loginBtn.addEventListener("click", async () => {
-  const provider = new GoogleAuthProvider();
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    console.log("User logged in:", user);
+document.getElementById("loginBtn").onclick = () => {
+  const email = document.getElementById("loginEmail").value;
+  const pass = document.getElementById("loginPassword").value;
+  signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+};
 
-    // Store user data in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      name: user.displayName,
-      email: user.email,
-      lastLogin: new Date(),
+document.getElementById("signupBtn").onclick = () => {
+  const email = document.getElementById("signupEmail").value;
+  const pass = document.getElementById("signupPassword").value;
+  createUserWithEmailAndPassword(auth, email, pass)
+    .then(() => {
+      alert("Account created!");
+      signupSection.style.display = "none";
+      authSection.style.display = "block";
+    })
+    .catch(err => alert(err.message));
+};
+
+document.getElementById("showSignup").onclick = () => {
+  authSection.style.display = "none";
+  signupSection.style.display = "block";
+};
+
+document.getElementById("showLogin").onclick = () => {
+  signupSection.style.display = "none";
+  authSection.style.display = "block";
+};
+
+// Moved logout function to the javascript file.
+document.getElementById("logoutBtn").onclick = async () => {
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+    console.log("Snapshot listener unsubscribed.");
+  }
+  await signOut(auth);
+  console.log("user logged out");
+};
+
+document.getElementById("addVaultBtn").onclick = async () => {
+  const item = document.getElementById("vaultInput").value;
+  if (!item) return;
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    await addDoc(collection(db, "vault"), {
+      item,
+      userId: currentUser.uid
     });
-
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-  } catch (error) {
-    console.error("Error signing in with Google:", error.message);
+    document.getElementById("vaultInput").value = "";
   }
-});
+};
 
-// Handle logout
-logoutBtn.addEventListener("click", async () => {
-  try {
-    await signOut(auth);
-    console.log("User logged out");
+const renderVaultItems = (items) => {
+  vaultItemsDiv.innerHTML = "";
+  items.forEach(({ id, item }) => {
+    const div = document.createElement("div");
+    div.className = "vault-item";
+    div.innerHTML = `
+      <span>${item}</span>
+      <button class="btn btn-sm btn-danger" data-id="${id}">Delete</button>
+    `;
+    vaultItemsDiv.appendChild(div);
+  });
+};
 
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-  } catch (error) {
-    console.error("Error signing out:", error.message);
-  }
-});
+let unsubscribe = null;
 
-// Check if user is already logged in on page load
-auth.onAuthStateChanged(user => {
-  if (user) {
-    console.log("User is logged in:", user);
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-  } else {
-    console.log("No user logged in.");
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
+const showVault = () => {
+  authSection.style.display = "none";
+  signupSection.style.display = "none";
+  vaultSection.style.display = "block";
+
+  if (unsubscribe) unsubscribe();
+  const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
+  unsubscribe = onSnapshot(q, (snapshot) => {
+    const items = [];
+    snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+    renderVaultItems(items);
+  });
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) showVault();
+  else {
+    vaultSection.style.display = "none";
+    authSection.style.display = "block";
   }
 });
