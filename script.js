@@ -1,70 +1,63 @@
-// Firebase Setup (Use your own config here)
+// Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+  apiKey: "YOUR_API_KEY",
   authDomain: "carroll-fam-v.firebaseapp.com",
   projectId: "carroll-fam-v",
-  storageBucket: "carroll-fam-v.firebasestorage.app",
+  storageBucket: "carroll-fam-v.appspot.com",
   messagingSenderId: "31202730208",
   appId: "1:31202730208:web:424f6d013231a970ae3085",
   measurementId: "G-6L6FH62554"
 };
+
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-// DOM elements
-const loginBox = document.getElementById('login-box');
-const signupBox = document.getElementById('signup-box');
-const loginForm = document.getElementById('login-form');
-const signupForm = document.getElementById('signup-form');
-const loginMessage = document.getElementById('login-message');
-const signupMessage = document.getElementById('signup-message');
+function showSignup() {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('signup-box').style.display = 'block';
+}
 
-// Auth State
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    window.location.href = "/vault.html";  // Redirect to Vault after login/signup
-  }
-});
+function showLogin() {
+  document.getElementById('signup-box').style.display = 'none';
+  document.getElementById('login-box').style.display = 'block';
+}
 
-// Login functionality
-loginForm.addEventListener('submit', function(event) {
+// Login Function
+function login(event) {
   event.preventDefault();
   const email = document.getElementById('username').value;
   const password = document.getElementById('password').value;
 
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      window.location.href = "/vault.html";  // Redirect to Vault page
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      document.getElementById('login-box').style.display = 'none';
+      document.getElementById('vault').style.display = 'block';
     })
-    .catch(error => {
-      loginMessage.textContent = `Error: ${error.message}`;
+    .catch((error) => {
+      document.getElementById('login-error').innerText = error.message;
     });
-});
+}
 
-// Sign Up functionality
-signupForm.addEventListener('submit', function(event) {
+// Sign Up Function
+function signUp(event) {
   event.preventDefault();
-  const email = document.getElementById('signup-username').value;
+  const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
 
-  firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      signupMessage.textContent = "Account created! Redirecting to login...";
-      setTimeout(() => {
-        window.location.href = '/login.html';  // Redirect to login page after successful sign-up
-      }, 2000);
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      showLogin();
+      alert('Your account has been created! You can now log in.');
     })
-    .catch(error => {
-      signupMessage.textContent = `Error: ${error.message}`;
+    .catch((error) => {
+      document.getElementById('signup-error').innerText = error.message;
     });
-});
+}
 
-// Switch between login and signup
-document.getElementById('signup-btn').addEventListener('click', function() {
-  loginBox.style.display = "none";
-  signupBox.style.display = "block";
-});
-
-document.getElementById('login-btn').addEventListener('click', function() {
-  signupBox.style.display = "none";
-  loginBox.style.display = "block";
-});
+// Logout Function
+function logout() {
+  auth.signOut().then(() => {
+    document.getElementById('vault').style.display = 'none';
+    document.getElementById('login-box').style.display = 'block';
+  });
+}
