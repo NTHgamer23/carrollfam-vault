@@ -4,15 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>CarrollFam Vault - Demo</title>
-
-  <!-- ✅ CryptoJS for encryption -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
   <link rel="stylesheet" href="styles.css?v=2.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script> <!-- Add CryptoJS -->
 </head>
 <body>
   <div id="login-box">
-    <h1>CarrollFam Login (Demo)</h1>
+    <h1>CarrollFam Vault - Login</h1>
     <p class="description">Enter credentials to access the vault.</p>
 
     <form id="login-form" onsubmit="login(event)">
@@ -25,8 +22,29 @@
         <input type="password" id="password" placeholder="Password" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
       <button type="submit">Login</button>
+      <p>Don't have an account? <a href="#" onclick="showSignupForm()">Sign Up</a></p>
       <div id="login-error-container" aria-live="polite">
         <p id="login-error" class="error-message"></p>
+      </div>
+    </form>
+  </div>
+
+  <div id="signup-box" style="display: none;">
+    <h1>CarrollFam Vault - Signup</h1>
+    <p class="description">Create a new account to access the vault.</p>
+    <form id="signup-form" onsubmit="signup(event)">
+      <div>
+        <label for="signup-username" class="sr-only">Username</label>
+        <input type="text" id="signup-username" placeholder="Username" required autocomplete="off" />
+      </div>
+      <div>
+        <label for="signup-password" class="sr-only">Password</label>
+        <input type="password" id="signup-password" placeholder="Password" required autocomplete="off" />
+      </div>
+      <button type="submit">Sign Up</button>
+      <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
+      <div id="signup-error-container" aria-live="polite">
+        <p id="signup-error" class="error-message"></p>
       </div>
     </form>
   </div>
@@ -59,8 +77,7 @@
     <button type="button" onclick="logout()">Logout</button>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
   <script src="script.js?v=2.0"></script>
 </body>
 </html>
+
