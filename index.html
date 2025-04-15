@@ -1,58 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CarrollFam Vault - Demo</title>
-  <link rel="stylesheet" href="styles.css?v=2.0" />
-  <!-- Add Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault Login</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    .container {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #dashboard {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <div id="login-box">
-    <h1>CarrollFam Login (Demo)</h1>
-    <p class="description">Enter credentials to access the vault.</p>
 
-    <form id="login-form" onsubmit="login(event)">
-      <div>
-        <label for="username" class="sr-only">Username</label>
-        <input type="text" id="username" placeholder="Username" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-      </div>
-      <div>
-        <label for="password" class="sr-only">Password</label>
-        <input type="password" id="password" placeholder="Password" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-      </div>
-      <button type="submit">Login</button>
-      <p id="login-error" class="error-message"></p>
-      <p id="signup-link"><a href="#" onclick="showSignup()">Sign Up</a></p>
-    </form>
+<div id="auth">
+  <h2>Login</h2>
+  <div class="container">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="showSignup()">Go to Signup</button>
   </div>
+</div>
 
-  <div id="signup-box" style="display: none;">
-    <h1>CarrollFam Sign Up</h1>
-    <form id="signup-form" onsubmit="signUp(event)">
-      <div>
-        <label for="signup-email" class="sr-only">Email</label>
-        <input type="email" id="signup-email" placeholder="Email" required autocomplete="off" />
-      </div>
-      <div>
-        <label for="signup-password" class="sr-only">Password</label>
-        <input type="password" id="signup-password" placeholder="Password" required autocomplete="off" />
-      </div>
-      <button type="submit">Sign Up</button>
-      <p id="signup-error" class="error-message"></p>
-      <p id="login-link"><a href="#" onclick="showLogin()">Back to Login</a></p>
-    </form>
+<div id="signup" style="display:none">
+  <h2>Signup</h2>
+  <div class="container">
+    <input id="signupEmail" type="email" placeholder="Email">
+    <input id="signupPassword" type="password" placeholder="Password">
+    <button onclick="signup()">Create Account</button>
+    <button onclick="showLogin()">Back to Login</button>
   </div>
+</div>
 
-  <div id="vault" style="display: none;">
-    <h2>Vault Contents</h2>
-    <p class="storage-notice">Items synced across devices.</p>
-    <button type="button" onclick="logout()">Logout</button>
+<div id="dashboard">
+  <h2>Vault</h2>
+  <div class="container">
+    <input id="vaultTitle" placeholder="Title">
+    <input id="vaultPassword" placeholder="Password">
+    <button onclick="addPassword()">Save</button>
+    <ul id="passwordList"></ul>
+    <button onclick="logout()">Logout</button>
   </div>
+</div>
 
-  <script src="script.js?v=2.0"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+  authDomain: "carroll-fam-v.firebaseapp.com",
+  projectId: "carroll-fam-v",
+  storageBucket: "carroll-fam-v.appspot.com",
+  messagingSenderId: "31202730208",
+  appId: "1:31202730208:web:424f6d013231a970ae3085",
+  measurementId: "G-6L6FH62554",
+  databaseURL: "https://carroll-fam-v-default-rtdb.firebaseio.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+function showSignup() {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("signup").style.display = "block";
+}
+
+function showLogin() {
+  document.getElementById("signup").style.display = "none";
+  document.getElementById("auth").style.display = "block";
+}
+
+function signup() {
+  const email = document.getElementById("signupEmail").value;
+  const password = document.getElementById("signupPassword").value;
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Account created!");
+      showLogin();
+    })
+    .catch(e => alert(e.message));
+}
+
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      loadDashboard();
+    })
+    .catch(e => alert(e.message));
+}
+
+function loadDashboard() {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("signup").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  loadPasswords();
+}
+
+auth.onAuthStateChanged(user => {
+  if (user) loadDashboard();
+});
+
+function logout() {
+  auth.signOut().then(() => {
+    location.reload();
+  });
+}
+
+function addPassword() {
+  const title = document.getElementById("vaultTitle").value;
+  const password = document.getElementById("vaultPassword").value;
+  const userId = auth.currentUser.uid;
+  db.ref("vaults/" + userId).push({ title, password });
+  document.getElementById("vaultTitle").value = "";
+  document.getElementById("vaultPassword").value = "";
+  loadPasswords();
+}
+
+function loadPasswords() {
+  const userId = auth.currentUser.uid;
+  db.ref("vaults/" + userId).once("value", snapshot => {
+    const list = document.getElementById("passwordList");
+    list.innerHTML = "";
+    snapshot.forEach(child => {
+      const li = document.createElement("li");
+      li.textContent = `${child.val().title}: ${child.val().password}`;
+      list.appendChild(li);
+    });
+  });
+}
+</script>
 </body>
 </html>
+
