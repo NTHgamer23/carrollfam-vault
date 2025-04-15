@@ -1,131 +1,111 @@
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  onSnapshot,
-  signOut,
-  getAuth,
-  onAuthStateChanged,
-} from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-// Initialize Firestore and Firebase Auth
-const db = getFirestore();
-const auth = getAuth();
+const firebaseConfig = {
+  apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+  authDomain: "carroll-fam-v.firebaseapp.com",
+  projectId: "carroll-fam-v",
+  storageBucket: "carroll-fam-v.appspot.com",
+  messagingSenderId: "31202730208",
+  appId: "1:31202730208:web:424f6d013231a970ae3085",
+  measurementId: "G-6L6FH62554"
+};
 
-// Function to check if the user is authenticated
-function isAuthenticated() {
-  return auth.currentUser != null;
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Write data to Firestore (only if the user is authenticated)
-async function writeToFirestore(userId, data) {
-  if (isAuthenticated()) {
-    const userDocRef = doc(db, 'users', userId);
-    try {
-      await setDoc(userDocRef, data);
-      console.log('Document written!');
-    } catch (error) {
-      console.error('Error writing document:', error);
-    }
-  } else {
-    console.error('User is not authenticated.');
+const authSection = document.getElementById("auth-section");
+const signupSection = document.getElementById("signup-section");
+const vaultSection = document.getElementById("vault-section");
+const vaultItemsDiv = document.getElementById("vaultItems");
+
+document.getElementById("loginBtn").onclick = () => {
+  const email = document.getElementById("loginEmail").value;
+  const pass = document.getElementById("loginPassword").value;
+  signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+};
+
+document.getElementById("signupBtn").onclick = () => {
+  const email = document.getElementById("signupEmail").value;
+  const pass = document.getElementById("signupPassword").value;
+  createUserWithEmailAndPassword(auth, email, pass)
+    .then(() => {
+      alert("Account created!");
+      signupSection.style.display = "none";
+      authSection.style.display = "block";
+    })
+    .catch(err => alert(err.message));
+};
+
+document.getElementById("showSignup").onclick = () => {
+  authSection.style.display = "none";
+  signupSection.style.display = "block";
+};
+
+document.getElementById("showLogin").onclick = () => {
+  signupSection.style.display = "none";
+  authSection.style.display = "block";
+};
+
+// Moved logout function to the javascript file.
+document.getElementById("logoutBtn").onclick = async () => {
+  if (unsubscribe) {
+    unsubscribe();
+    unsubscribe = null;
+    console.log("Snapshot listener unsubscribed.");
   }
-}
+  await signOut(auth);
+  console.log("user logged out");
+};
 
-// Read data from Firestore (only if the user is authenticated)
-async function readFromFirestore(userId) {
-  if (isAuthenticated()) {
-    const userDocRef = doc(db, 'users', userId);
-    try {
-      const docSnap = await getDoc(userDocRef);
-      if (docSnap.exists()) {
-        console.log('Document data:', docSnap.data());
-        return docSnap.data(); // Return the data if needed.
-      } else {
-        console.log('No such document!');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error reading document:', error);
-      return null;
-    }
-  } else {
-    console.error('User is not authenticated.');
-    return null;
+document.getElementById("addVaultBtn").onclick = async () => {
+  const item = document.getElementById("vaultInput").value;
+  if (!item) return;
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    await addDoc(collection(db, "vault"), {
+      item,
+      userId: currentUser.uid
+    });
+    document.getElementById("vaultInput").value = "";
   }
-}
+};
 
-// Variable to store the unsubscribe function for the snapshot listener
-let unsubscribeSnapshotListener = null;
+const renderVaultItems = (items) => {
+  vaultItemsDiv.innerHTML = "";
+  items.forEach(({ id, item }) => {
+    const div = document.createElement("div");
+    div.className = "vault-item";
+    div.innerHTML = `
+      <span>${item}</span>
+      <button class="btn btn-sm btn-danger" data-id="${id}">Delete</button>
+    `;
+    vaultItemsDiv.appendChild(div);
+  });
+};
 
-// Function to set up the snapshot listener
-function setupSnapshotListener(userId) {
-  if (userId) {
-    const collectionRef = collection(db, 'users', userId, 'userSubCollection'); // Replace with your actual collection path
+let unsubscribe = null;
 
-    unsubscribeSnapshotListener = onSnapshot(
-      collectionRef,
-      (snapshot) => {
-        snapshot.forEach((doc) => {
-          console.log(doc.id, '=>', doc.data());
-          // Handle the snapshot data here
-        });
-      },
-      (error) => {
-        console.error('Snapshot listener error:', error);
-      }
-    );
-    console.log('Snapshot listener set up.');
-  }
-}
+const showVault = () => {
+  authSection.style.display = "none";
+  signupSection.style.display = "none";
+  vaultSection.style.display = "block";
 
-// Function to handle logout
-async function logout() {
-  try {
-    await signOut(auth);
-    console.log('User logged out successfully.');
-    if (unsubscribeSnapshotListener) {
-      console.log('Attempting to unsubscribe snapshot listener.');
-      unsubscribeSnapshotListener();
-      unsubscribeSnapshotListener = null;
-      console.log('Snapshot listener unsubscribed.');
-    } else {
-      console.log('No snapshot listener to unsubscribe.');
-    }
-    // Perform any necessary UI updates or redirects here.
-  } catch (error) {
-    console.error('Error logging out:', error);
-  }
-}
+  if (unsubscribe) unsubscribe();
+  const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
+  unsubscribe = onSnapshot(q, (snapshot) => {
+    const items = [];
+    snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+    renderVaultItems(items);
+  });
+};
 
-// Firebase Auth state change listener to detect login/logout
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log('User logged in:', user.uid);
-
-    // Example data to write to Firestore (could be replaced with actual user input)
-    const exampleData = {
-      name: 'John Doe',
-      age: 25,
-      email: 'john.doe@example.com',
-    };
-
-    // Write data for the logged-in user to their document
-    writeToFirestore(user.uid, exampleData);
-
-    // Optionally, read data for the logged-in user
-    readFromFirestore(user.uid);
-
-    // Set up snapshot listener
-    setupSnapshotListener(user.uid);
-  } else {
-    console.log('No user logged in. currentUser:', auth.currentUser);
-    // If you have any UI updates to do when the user logs out, do them here.
+onAuthStateChanged(auth, user => {
+  if (user) showVault();
+  else {
+    vaultSection.style.display = "none";
+    authSection.style.display = "block";
   }
 });
-
-// Example: Attach the logout function to a button click
-document.getElementById('logoutButton').addEventListener('click', logout);
