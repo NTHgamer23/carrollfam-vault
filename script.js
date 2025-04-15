@@ -1,6 +1,6 @@
 /**
  * Handles login and vault logic for CarrollFam Vault demo.
- * In-memory storage, manual sync via code exchange, no localStorage.
+ * In-memory storage, Firebase Realtime Database for auto-sync.
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
@@ -17,6 +17,21 @@ let loginAttempts = 0;
 const MAX_ATTEMPTS = 3;
 let vaultItems = [];
 let isLoggedIn = false;
+
+// Firebase Config (REPLACE WITH YOUR OWN)
+const firebaseConfig = {
+  apiKey: "AIzaSyDUMMY",
+  authDomain: "carrollfam-vault.firebaseapp.com",
+  databaseURL: "https://carrollfam-vault-default-rtdb.firebaseio.com",
+  projectId: "carrollfam-vault",
+  storageBucket: "carrollfam-vault.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef123456"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
 // HTTPS check
 if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
@@ -87,12 +102,30 @@ async function login(event) {
     loginAttempts = 0;
     isLoggedIn = true;
     showVault();
-    renderVaultItems();
+    await fetchVaultData();
   } catch (error) {
     console.error('Login error:', error.message);
     loginError.textContent = `Login failed: ${error.message}`;
   } finally {
     loginForm.querySelector('button').disabled = false;
+  }
+}
+
+async function fetchVaultData() {
+  if (!isLoggedIn) {
+    showLogin();
+    return;
+  }
+
+  try {
+    const ref = database.ref(`vaults/${HARDCODED_USERNAME}`);
+    ref.on('value', (snapshot) => {
+      vaultItems = snapshot.val() || [];
+      if (!Array.isArray(vaultItems)) vaultItems = [];
+      renderVaultItems();
+    });
+  } catch (error) {
+    console.error('Error fetching vault data:', error.message);
   }
 }
 
@@ -120,11 +153,14 @@ async function addVaultItem(event) {
     // Hash the vault password
     const hashedPassword = await hashPassword(password);
 
-    // Add to in-memory array
-    vaultItems.push({ website, username, password, hashedPassword, note, timestamp: Date.now() });
+    // Update in-memory array
+    const item = { website, username, password, hashedPassword, note, timestamp: Date.now() };
+    vaultItems.push(item);
 
-    // Refresh display
-    renderVaultItems();
+    // Sync to Firebase
+    await database.ref(`vaults/${HARDCODED_USERNAME}`).set(vaultItems);
+
+    // Refresh display (Firebase listener handles it)
     vaultForm.reset();
   } catch (error) {
     console.error('Error adding vault item:', error.message);
@@ -138,58 +174,12 @@ async function deleteVaultItem(index) {
   try {
     if (index >= 0 && index < vaultItems.length) {
       vaultItems.splice(index, 1);
-      renderVaultItems();
+      await database.ref(`vaults/${HARDCODED_USERNAME}`).set(vaultItems);
+      // Firebase listener updates UI
     }
   } catch (error) {
     console.error('Error deleting vault item:', error.message);
     alert('Failed to delete item: ' + error.message);
-  }
-}
-
-function exportVault() {
-  try {
-    const data = JSON.stringify(vaultItems);
-    const syncCode = btoa(data);
-    prompt('Copy this sync code:', syncCode);
-  } catch (error) {
-    alert('Failed to export vault: ' + error.message);
-  }
-}
-
-function importVault() {
-  const syncCode = document.getElementById('import-code').value.trim();
-  if (!syncCode) {
-    alert('Please paste a sync code.');
-    return;
-  }
-
-  try {
-    const data = atob(syncCode);
-    const incomingItems = JSON.parse(data);
-
-    // Merge items (newest timestamp wins)
-    const merged = [];
-    const allItems = [...vaultItems, ...incomingItems];
-    const seen = new Set();
-
-    for (const item of allItems) {
-      const key = `${item.website}:${item.username}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        merged.push(item);
-      } else {
-        const existing = merged.find((m) => `${m.website}:${m.username}` === key);
-        if (existing.timestamp < item.timestamp) {
-          Object.assign(existing, item);
-        }
-      }
-    }
-
-    vaultItems = merged;
-    renderVaultItems();
-    document.getElementById('import-code').value = '';
-  } catch (error) {
-    alert('Invalid sync code: ' + error.message);
   }
 }
 
@@ -223,6 +213,7 @@ function showLogin() {
 function logout() {
   isLoggedIn = false;
   vaultItems = [];
+  database.ref(`vaults/${HARDCODED_USERNAME}`).off();
   showLogin();
 }
 
