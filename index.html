@@ -2,36 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>CarrollFam Vault</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CarrollFam Vault - Demo</title>
   <link rel="stylesheet" href="styles.css?v=2.0" />
-  <!-- Firebase SDK -->
+  <!-- Add Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
 </head>
 <body>
-  <!-- Login Page -->
   <div id="login-box">
-    <h1>Login</h1>
-    <form id="login-form">
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="password" id="password" placeholder="Password" required />
+    <h1>CarrollFam Login (Demo)</h1>
+    <p class="description">Enter credentials to access the vault.</p>
+
+    <form id="login-form" onsubmit="login(event)">
+      <div>
+        <label for="username" class="sr-only">Username</label>
+        <input type="text" id="username" placeholder="Username" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </div>
+      <div>
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" placeholder="Password" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </div>
       <button type="submit">Login</button>
-      <p id="login-message"></p>
-      <button type="button" id="signup-btn">Sign Up</button>
+      <p id="login-error" class="error-message"></p>
+      <p id="signup-link"><a href="#" onclick="showSignup()">Sign Up</a></p>
     </form>
   </div>
 
-  <!-- Sign Up Page -->
-  <div id="signup-box" style="display:none;">
-    <h1>Sign Up</h1>
-    <form id="signup-form">
-      <input type="text" id="signup-username" placeholder="Username" required />
-      <input type="password" id="signup-password" placeholder="Password" required />
+  <div id="signup-box" style="display: none;">
+    <h1>CarrollFam Sign Up</h1>
+    <form id="signup-form" onsubmit="signUp(event)">
+      <div>
+        <label for="signup-email" class="sr-only">Email</label>
+        <input type="email" id="signup-email" placeholder="Email" required autocomplete="off" />
+      </div>
+      <div>
+        <label for="signup-password" class="sr-only">Password</label>
+        <input type="password" id="signup-password" placeholder="Password" required autocomplete="off" />
+      </div>
       <button type="submit">Sign Up</button>
-      <p id="signup-message"></p>
-      <button type="button" id="login-btn">Back to Login</button>
+      <p id="signup-error" class="error-message"></p>
+      <p id="login-link"><a href="#" onclick="showLogin()">Back to Login</a></p>
     </form>
+  </div>
+
+  <div id="vault" style="display: none;">
+    <h2>Vault Contents</h2>
+    <p class="storage-notice">Items synced across devices.</p>
+    <button type="button" onclick="logout()">Logout</button>
   </div>
 
   <script src="script.js?v=2.0"></script>
