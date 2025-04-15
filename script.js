@@ -1,90 +1,76 @@
-const loginForm = document.getElementById("login-form");
-const vaultForm = document.getElementById("vault-form");
-const loginBox = document.getElementById("login-box");
-const vault = document.getElementById("vault");
-const loginError = document.getElementById("login-error");
-const vaultItems = document.getElementById("vault-items");
+// Store user credentials securely using CryptoJS
+const SECRET_KEY = 'mysecretkey'; // Key for encryption (should be stored securely)
+const storage = window.localStorage;
 
-let currentUser = null;
-const validUsername = "demo";
-const validPassword = "password";
-const secretKey = "supersecretkey123"; // change this
-
-function encrypt(text) {
-  return CryptoJS.AES.encrypt(text, secretKey).toString();
+// Show Signup Form
+function showSignupForm() {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('signup-box').style.display = 'block';
+  document.getElementById('login-error-container').style.display = 'none';
+  document.getElementById('signup-error-container').style.display = 'none';
 }
 
-function decrypt(ciphertext) {
-  try {
-    const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
-    return bytes.toString(CryptoJS.enc.Utf8);
-  } catch {
-    return "[decryption error]";
-  }
+// Show Login Form
+function showLoginForm() {
+  document.getElementById('signup-box').style.display = 'none';
+  document.getElementById('login-box').style.display = 'block';
+  document.getElementById('login-error-container').style.display = 'none';
+  document.getElementById('signup-error-container').style.display = 'none';
 }
 
+// Signup Functionality
+function signup(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('signup-username').value;
+  const password = document.getElementById('signup-password').value;
+
+  // Encrypt the password
+  const encryptedPassword = CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+
+  // Store the credentials in localStorage
+  storage.setItem(username, encryptedPassword);
+
+  alert('Account created successfully!');
+  showLoginForm(); // Switch to Login form
+}
+
+// Login Functionality
 function login(event) {
   event.preventDefault();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
 
-  if (username === validUsername && password === validPassword) {
-    currentUser = username;
-    loginBox.style.display = "none";
-    vault.style.display = "block";
-    loadVaultItems();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  // Retrieve the encrypted password from localStorage
+  const encryptedPassword = storage.getItem(username);
+
+  if (!encryptedPassword) {
+    document.getElementById('login-error').textContent = 'User not found!';
+    return;
+  }
+
+  // Decrypt the stored password
+  const decryptedPassword = CryptoJS.AES.decrypt(encryptedPassword, SECRET_KEY).toString(CryptoJS.enc.Utf8);
+
+  // Check if the password matches
+  if (decryptedPassword === password) {
+    alert('Login successful!');
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('vault').style.display = 'block';
   } else {
-    loginError.textContent = "Invalid credentials.";
+    document.getElementById('login-error').textContent = 'Invalid credentials!';
   }
 }
 
+// Logout Functionality
 function logout() {
-  currentUser = null;
-  loginBox.style.display = "block";
-  vault.style.display = "none";
-  loginForm.reset();
-  vaultItems.innerHTML = "";
+  document.getElementById('vault').style.display = 'none';
+  document.getElementById('login-box').style.display = 'block';
 }
 
+// Add Vault Item Function (for future expansion)
 function addVaultItem(event) {
   event.preventDefault();
-  const website = document.getElementById("vault-website").value.trim();
-  const username = document.getElementById("vault-username").value.trim();
-  const password = encrypt(document.getElementById("vault-password").value);
-  const note = encrypt(document.getElementById("vault-note").value.trim());
-
-  if (!website || !username || !password) return;
-
-  const item = { website, username, password, note };
-  const items = JSON.parse(localStorage.getItem(`vault-${currentUser}`)) || [];
-  items.push(item);
-  localStorage.setItem(`vault-${currentUser}`, JSON.stringify(items));
-
-  vaultForm.reset();
-  loadVaultItems();
-}
-
-function loadVaultItems() {
-  vaultItems.innerHTML = "";
-  const items = JSON.parse(localStorage.getItem(`vault-${currentUser}`)) || [];
-
-  items.forEach((item, index) => {
-    const p = document.createElement("p");
-    p.innerHTML = `
-      <strong>Website:</strong> ${item.website}<br>
-      <strong>Username:</strong> ${item.username}<br>
-      <strong>Password:</strong> ${decrypt(item.password)}<br>
-      ${item.note ? `<strong>Note:</strong> ${decrypt(item.note)}<br>` : ""}
-      <button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button>
-    `;
-    vaultItems.appendChild(p);
-    vaultItems.appendChild(document.createElement("hr"));
-  });
-}
-
-function deleteVaultItem(index) {
-  const items = JSON.parse(localStorage.getItem(`vault-${currentUser}`)) || [];
-  items.splice(index, 1);
-  localStorage.setItem(`vault-${currentUser}`, JSON.stringify(items));
-  loadVaultItems();
+  // Logic to add items to vault...
 }
