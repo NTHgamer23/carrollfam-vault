@@ -72,9 +72,7 @@
     document.getElementById("loginBtn").onclick = () => {
       const email = document.getElementById("loginEmail").value;
       const pass = document.getElementById("loginPassword").value;
-      signInWithEmailAndPassword(auth, email, pass)
-        .then(() => showVault())
-        .catch(err => alert(err.message));
+      signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
     };
 
     document.getElementById("signupBtn").onclick = () => {
@@ -120,23 +118,28 @@
         div.className = "vault-item";
         div.innerHTML = `
           <span>${item}</span>
-          <button class="btn btn-sm btn-danger" onclick="deleteVaultItem(\"${id}\")">Delete</button>
+          <button class="btn btn-sm btn-danger" data-id="${id}">Delete</button>
         `;
         vaultItemsDiv.appendChild(div);
       });
     };
 
-    window.deleteVaultItem = async (id) => {
-      await deleteDoc(doc(db, "vault", id));
-    };
+    vaultItemsDiv.addEventListener("click", async (e) => {
+      if (e.target.tagName === "BUTTON" && e.target.dataset.id) {
+        await deleteDoc(doc(db, "vault", e.target.dataset.id));
+      }
+    });
+
+    let unsubscribe = null;
 
     const showVault = () => {
       authSection.style.display = "none";
       signupSection.style.display = "none";
       vaultSection.style.display = "block";
 
+      if (unsubscribe) unsubscribe();
       const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
-      onSnapshot(q, (snapshot) => {
+      unsubscribe = onSnapshot(q, (snapshot) => {
         const items = [];
         snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
         renderVaultItems(items);
