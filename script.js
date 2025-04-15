@@ -65,6 +65,7 @@ signupBtn.onclick = async () => {
   try {
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db, "vaults", userCred.user.uid), { items: [] });
+    alert("Account created successfully!");
   } catch (err) {
     alert(err.message);
   }
@@ -114,11 +115,20 @@ function watchVault(uid) {
 addVaultBtn.onclick = async () => {
   const item = vaultInput.value.trim();
   if (item && auth.currentUser) {
-    const vaultRef = doc(db, "vaults", auth.currentUser.uid);
-    await updateDoc(vaultRef, {
-      items: arrayUnion(item),
-    });
-    vaultInput.value = "";
+    try {
+      const vaultRef = doc(db, "vaults", auth.currentUser.uid);
+      await updateDoc(vaultRef, {
+        items: arrayUnion(item),
+      });
+      console.log(`Item "${item}" added to the vault`);
+      vaultInput.value = ""; // Clear the input field
+    } catch (error) {
+      console.error("Error adding item to vault:", error.message);
+      alert("Failed to add item to vault. Try again.");
+    }
+  } else {
+    console.log("No item or user is not authenticated.");
+    alert("Please enter an item or log in.");
   }
 };
 
