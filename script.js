@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
@@ -122,3 +122,56 @@ onAuthStateChanged(auth, user => {
     authSection.style.display = "block";
   }
 });
+
+// Family plan functions.
+
+document.getElementById("createFamilyBtn").onclick = async () => {
+  const familyName = document.getElementById("familyNameInput").value;
+  if (!familyName) return;
+  if (!auth.currentUser) return;
+  try {
+    const familyDocRef = await addDoc(collection(db, 'families'), {
+      ownerUid: auth.currentUser.uid,
+      members: [auth.currentUser.uid],
+      familyName: familyName,
+    });
+    await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+      familyId: familyDocRef.id,
+    });
+    console.log('Family created!');
+    alert("Family Created")
+  } catch (error) {
+    console.error('Error creating family:', error);
+    alert("Family creation failed.")
+  }
+};
+
+document.getElementById("joinFamilyBtn").onclick = async () => {
+  const familyId = document.getElementById("familyIdInput").value;
+  if (!familyId) return;
+  if (!auth.currentUser) return;
+  try {
+    const familyDocRef = doc(db, 'families', familyId);
+    const familyDocSnap = await getDoc(familyDocRef);
+    if (familyDocSnap.exists()) {
+      const familyData = familyDocSnap.data();
+      if (!familyData.members.includes(auth.currentUser.uid)) {
+        await updateDoc(familyDocRef, {
+          members: [...familyData.members, auth.currentUser.uid],
+        });
+        await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+          familyId: familyId,
+        });
+        console.log('Joined family!');
+        alert("Family Joined.")
+      } else {
+        alert("You are already in that family.")
+      }
+    } else {
+      alert('Family not found.');
+    }
+  } catch (error) {
+    console.error('Error joining family:', error);
+    alert("Family join failed.")
+  }
+};
