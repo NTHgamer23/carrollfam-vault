@@ -1,127 +1,70 @@
-// AES encryption/decryption with CryptoJS
-const secretKey = "Jn6119_270100663!#";  // Use a strong secret key (store securely)
+// Firebase Setup (Use your own config here)
+const firebaseConfig = {
+  apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
+  authDomain: "carroll-fam-v.firebaseapp.com",
+  projectId: "carroll-fam-v",
+  storageBucket: "carroll-fam-v.firebasestorage.app",
+  messagingSenderId: "31202730208",
+  appId: "1:31202730208:web:424f6d013231a970ae3085",
+  measurementId: "G-6L6FH62554"
+};
+firebase.initializeApp(firebaseConfig);
 
-function encryptData(data) {
-  return CryptoJS.AES.encrypt(data, secretKey).toString();
-}
+// DOM elements
+const loginBox = document.getElementById('login-box');
+const signupBox = document.getElementById('signup-box');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const loginMessage = document.getElementById('login-message');
+const signupMessage = document.getElementById('signup-message');
 
-function decryptData(data) {
-  const bytes = CryptoJS.AES.decrypt(data, secretKey);
-  return bytes.toString(CryptoJS.enc.Utf8);
-}
-
-// Show Login Form
-function showLoginForm() {
-  document.getElementById("signup-box").style.display = "none";
-  document.getElementById("login-box").style.display = "block";
-  document.getElementById("login-error").innerText = '';
-}
-
-// Show Sign Up Form
-function showSignupForm() {
-  document.getElementById("login-box").style.display = "none";
-  document.getElementById("signup-box").style.display = "block";
-  document.getElementById("signup-error").innerText = '';
-}
-
-// Login Function
-function login(event) {
-  event.preventDefault();
-
-  const username = document.getElementById("login-username").value;
-  const password = document.getElementById("login-password").value;
-  
-  const storedUsername = localStorage.getItem("username");
-  const storedPassword = localStorage.getItem("password");
-
-  if (storedUsername && storedPassword) {
-    if (username === storedUsername && decryptData(storedPassword) === password) {
-      document.getElementById("login-box").style.display = "none";
-      document.getElementById("vault").style.display = "block";
-    } else {
-      document.getElementById("login-error").innerText = "Incorrect username or password.";
-    }
-  } else {
-    document.getElementById("login-error").innerText = "Account does not exist.";
+// Auth State
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    window.location.href = "/vault.html";  // Redirect to Vault after login/signup
   }
-}
+});
 
-// Sign Up Function
-function signup(event) {
+// Login functionality
+loginForm.addEventListener('submit', function(event) {
   event.preventDefault();
+  const email = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
 
-  const username = document.getElementById("signup-username").value;
-  const password = document.getElementById("signup-password").value;
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      window.location.href = "/vault.html";  // Redirect to Vault page
+    })
+    .catch(error => {
+      loginMessage.textContent = `Error: ${error.message}`;
+    });
+});
 
-  // Store the username and encrypted password in localStorage
-  localStorage.setItem("username", username);
-  localStorage.setItem("password", encryptData(password));
-
-  // Automatically login after signup
-  showLoginForm();
-  alert("Account created successfully!");
-}
-
-// Logout Function
-function logout() {
-  document.getElementById("vault").style.display = "none";
-  document.getElementById("login-box").style.display = "block";
-}
-
-// Add Vault Item (This is a placeholder)
-function addVaultItem(event) {
+// Sign Up functionality
+signupForm.addEventListener('submit', function(event) {
   event.preventDefault();
+  const email = document.getElementById('signup-username').value;
+  const password = document.getElementById('signup-password').value;
 
-  const website = document.getElementById("vault-website").value;
-  const username = document.getElementById("vault-username").value;
-  const password = document.getElementById("vault-password").value;
-  const note = document.getElementById("vault-note").value;
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      signupMessage.textContent = "Account created! Redirecting to login...";
+      setTimeout(() => {
+        window.location.href = '/login.html';  // Redirect to login page after successful sign-up
+      }, 2000);
+    })
+    .catch(error => {
+      signupMessage.textContent = `Error: ${error.message}`;
+    });
+});
 
-  const vaultItem = {
-    website,
-    username,
-    password,
-    note
-  };
+// Switch between login and signup
+document.getElementById('signup-btn').addEventListener('click', function() {
+  loginBox.style.display = "none";
+  signupBox.style.display = "block";
+});
 
-  const vaultItems = JSON.parse(localStorage.getItem("vaultItems")) || [];
-  vaultItems.push(vaultItem);
-  localStorage.setItem("vaultItems", JSON.stringify(vaultItems));
-
-  renderVaultItems();
-}
-
-// Render Vault Items (Display)
-function renderVaultItems() {
-  const vaultItems = JSON.parse(localStorage.getItem("vaultItems")) || [];
-  const vaultItemsContainer = document.getElementById("vault-items");
-  vaultItemsContainer.innerHTML = "";
-
-  vaultItems.forEach((item, index) => {
-    const itemDiv = document.createElement("div");
-    itemDiv.innerHTML = `
-      <p><strong>Website:</strong> ${item.website}</p>
-      <p><strong>Username:</strong> ${item.username}</p>
-      <p><strong>Password:</strong> ${item.password}</p>
-      <p><strong>Note:</strong> ${item.note}</p>
-      <button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button>
-      <hr>
-    `;
-    vaultItemsContainer.appendChild(itemDiv);
-  });
-}
-
-// Delete Vault Item
-function deleteVaultItem(index) {
-  const vaultItems = JSON.parse(localStorage.getItem("vaultItems")) || [];
-  vaultItems.splice(index, 1);
-  localStorage.setItem("vaultItems", JSON.stringify(vaultItems));
-  renderVaultItems();
-}
-
-// Initial Call to Render Vault Items if Logged In
-if (localStorage.getItem("username") && localStorage.getItem("password")) {
-  document.getElementById("login-box").style.display = "none";
-  document.getElementById("vault").style.display = "block";
-  renderVaultItems();
-}
+document.getElementById('login-btn').addEventListener('click', function() {
+  signupBox.style.display = "none";
+  loginBox.style.display = "block";
+});
