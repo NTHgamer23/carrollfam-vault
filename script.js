@@ -1,6 +1,6 @@
 /**
  * Handles login and vault logic for CarrollFam Vault demo.
- * Client-side with PBKDF2 hashing, localStorage only (syncing disabled temporarily).
+ * In-memory storage, manual sync via code exchange, no localStorage.
  */
 
 const HARDCODED_USERNAME = 'silientxroot';
@@ -15,17 +15,13 @@ const loginBox = document.getElementById('login-box');
 const vault = document.getElementById('vault');
 let loginAttempts = 0;
 const MAX_ATTEMPTS = 3;
+let vaultItems = [];
+let isLoggedIn = false;
 
 // HTTPS check
 if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
   loginError.textContent = 'This app requires HTTPS. Please use a secure connection.';
   loginForm.querySelector('button').disabled = true;
-}
-
-// Check if user is already logged in
-if (localStorage.getItem('isLoggedIn') === 'true') {
-  showVault();
-  fetchVaultData();
 }
 
 async function hashPassword(password) {
@@ -89,9 +85,9 @@ async function login(event) {
     }
 
     loginAttempts = 0;
-    localStorage.setItem('isLoggedIn', 'true');
+    isLoggedIn = true;
     showVault();
-    await fetchVaultData();
+    renderVaultItems();
   } catch (error) {
     console.error('Login error:', error.message);
     loginError.textContent = `Login failed: ${error.message}`;
@@ -103,7 +99,7 @@ async function login(event) {
 async function addVaultItem(event) {
   event.preventDefault();
 
-  if (localStorage.getItem('isLoggedIn') !== 'true') {
+  if (!isLoggedIn) {
     showLogin();
     return;
   }
@@ -124,13 +120,11 @@ async function addVaultItem(event) {
     // Hash the vault password
     const hashedPassword = await hashPassword(password);
 
-    // Update local storage
-    let vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
-    vaultItems.push({ website, username, password, hashedPassword, note });
-    localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
+    // Add to in-memory array
+    vaultItems.push({ website, username, password, hashedPassword, note, timestamp: Date.now() });
 
     // Refresh display
-    await fetchVaultData();
+    renderVaultItems();
     vaultForm.reset();
   } catch (error) {
     console.error('Error adding vault item:', error.message);
@@ -142,11 +136,9 @@ async function addVaultItem(event) {
 
 async function deleteVaultItem(index) {
   try {
-    let vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
     if (index >= 0 && index < vaultItems.length) {
       vaultItems.splice(index, 1);
-      localStorage.setItem('vaultItems', JSON.stringify(vaultItems));
-      await fetchVaultData();
+      renderVaultItems();
     }
   } catch (error) {
     console.error('Error deleting vault item:', error.message);
@@ -154,26 +146,63 @@ async function deleteVaultItem(index) {
   }
 }
 
-function fetchVaultData() {
-  if (localStorage.getItem('isLoggedIn') !== 'true') {
-    showLogin();
+function exportVault() {
+  try {
+    const data = JSON.stringify(vaultItems);
+    const syncCode = btoa(data);
+    prompt('Copy this sync code:', syncCode);
+  } catch (error) {
+    alert('Failed to export vault: ' + error.message);
+  }
+}
+
+function importVault() {
+  const syncCode = document.getElementById('import-code').value.trim();
+  if (!syncCode) {
+    alert('Please paste a sync code.');
     return;
   }
 
   try {
-    const vaultItems = JSON.parse(localStorage.getItem('vaultItems')) || [];
-    const vaultItemsDiv = document.getElementById('vault-items');
-    vaultItemsDiv.innerHTML = vaultItems
-      .map(
-        (item, index) =>
-          `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${
-            item.password || '[Hidden for security]'
-          }<br/><strong>Note:</strong> ${item.note}<br/><button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button></p><hr>`
-      )
-      .join('');
+    const data = atob(syncCode);
+    const incomingItems = JSON.parse(data);
+
+    // Merge items (newest timestamp wins)
+    const merged = [];
+    const allItems = [...vaultItems, ...incomingItems];
+    const seen = new Set();
+
+    for (const item of allItems) {
+      const key = `${item.website}:${item.username}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(item);
+      } else {
+        const existing = merged.find((m) => `${m.website}:${m.username}` === key);
+        if (existing.timestamp < item.timestamp) {
+          Object.assign(existing, item);
+        }
+      }
+    }
+
+    vaultItems = merged;
+    renderVaultItems();
+    document.getElementById('import-code').value = '';
   } catch (error) {
-    console.error('Error fetching vault data:', error.message);
+    alert('Invalid sync code: ' + error.message);
   }
+}
+
+function renderVaultItems() {
+  const vaultItemsDiv = document.getElementById('vault-items');
+  vaultItemsDiv.innerHTML = vaultItems
+    .map(
+      (item, index) =>
+        `<p><strong>Website:</strong> ${item.website}<br/><strong>Username:</strong> ${item.username}<br/><strong>Password:</strong> ${
+          item.password || '[Hidden for security]'
+        }<br/><strong>Note:</strong> ${item.note}<br/><button class="delete-button" onclick="deleteVaultItem(${index})">Delete</button></p><hr>`
+    )
+    .join('');
 }
 
 function showVault() {
@@ -192,7 +221,8 @@ function showLogin() {
 }
 
 function logout() {
-  localStorage.setItem('isLoggedIn', 'false');
+  isLoggedIn = false;
+  vaultItems = [];
   showLogin();
 }
 
