@@ -18,8 +18,8 @@
   <div class="container">
     <div id="auth-section">
       <h2>Login</h2>
-      <input class="form-control mb-2" type="email" id="loginEmail" placeholder="Email" />
-      <input class="form-control mb-2" type="password" id="loginPassword" placeholder="Password" />
+      <input class="form-control mb-2" type="email" id="loginEmail" placeholder="Email" autocomplete="email" />
+      <input class="form-control mb-2" type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" />
       <button class="btn btn-primary w-100" id="loginBtn">Login</button>
       <p class="mt-2 text-center">or</p>
       <button class="btn btn-secondary w-100" id="showSignup">Go to Signup</button>
@@ -34,6 +34,12 @@
       <button class="btn btn-secondary w-100" id="showLogin">Back to Login</button>
     </div>
 
+    <div id="key-section" style="display:none;">
+      <h3>Enter Secret Key</h3>
+      <input class="form-control mb-2" type="text" id="keyInput" placeholder="Enter secret key" autocomplete="one-time-code" />
+      <button class="btn btn-primary w-100" id="keySubmitBtn">Submit</button>
+    </div>
+
     <div id="vault-section" style="display:none;">
       <h2>Vault</h2>
       <div class="input-group mb-3">
@@ -42,12 +48,6 @@
       </div>
       <div id="vaultItems"></div>
       <button class="btn btn-danger w-100 mt-3" id="logoutBtn">Logout</button>
-    </div>
-
-    <div id="key-section" style="display:none;">
-      <h3>Enter Secret Key</h3>
-      <input class="form-control mb-2" type="text" id="keyInput" placeholder="Enter secret key" />
-      <button class="btn btn-primary w-100" id="keySubmitBtn">Submit</button>
     </div>
   </div>
 
