@@ -1,53 +1,119 @@
-/* Vault items container */
-#vaultItems {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Each individual vault item */
-.vault-item {
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  height: 100vh;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  background: #f5f5f5; /* Lighter background for contrast */
-  border-radius: 10px;
-  padding: 12px 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+#auth-section,
+#signup-section,
+#vault-section {
+  background-color: #ffffffcc;
+  backdrop-filter: blur(10px);
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  transition: all 0.3s ease;
+}
+
+h1 {
+  font-size: 28px;
+  color: #0d47a1; /* Dark blue header */
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
   font-size: 16px;
-  transition: transform 0.3s ease;
+  transition: 0.2s ease;
 }
 
-.vault-item:hover {
-  transform: translateY(-5px); /* Subtle hover effect */
+input:focus {
+  outline: none;
+  border-color: #1976d2; /* Lighter blue for focus */
+  box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
 }
 
-/* Vault item text */
-.vault-item span {
-  font-weight: 600;
-  color: #333333;
-  flex: 1;
-  word-wrap: break-word; /* Allow long text to wrap and fit */
-}
-
-/* Delete button style */
-.vault-item button {
-  background: #d32f2f; /* Red color for delete button */
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  font-size: 16px;
+  background: #1976d2; /* Blue button */
   color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.vault-item button:hover {
-  background: #c2185b; /* Darker red on hover */
+button:hover {
+  background: #1565c0; /* Darker blue on hover */
 }
 
-/* Optionally, add spacing between the vault items and overall clean layout */
-.vault-item + .vault-item {
-  margin-top: 10px;
+a {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  color: #1976d2;
+  text-decoration: none;
+  font-size: 14px;
 }
+
+a:hover {
+  text-decoration: underline;
+}
+
+#vaultItems {
+  margin-top: 20px;
+}
+
+.vault-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f5f5f5; /* Light gray for vault items */
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.vault-item:hover {
+  background-color: #e3f2fd; /* Light blue hover */
+}
+
+.vault-item span {
+  color: #0d47a1; /* Dark blue text for vault items */
+  font-size: 16px;
+}
+
+.vault-item button {
+  background: #e53935; /* Red button for delete */
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.vault-item button:hover {
+  background: #c62828; /* Darker red on hover */
+}
+
