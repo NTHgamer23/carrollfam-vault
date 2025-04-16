@@ -46,8 +46,14 @@ document.getElementById("signupBtn").onclick = async () => {
 
   try {
     await createUserWithEmailAndPassword(auth, email, pass);
-    const hashedKey = await bcrypt.hash("gypsy", 12);
+
+    // Hardcoded secret key "gypsy"
+    const secretKey = "gypsy";  // Hardcoded key
+    const hashedKey = await bcrypt.hash(secretKey, 12);  // Hash the key with bcrypt
+
+    // Store the hashed key in Firestore
     await setDoc(doc(db, "keys", auth.currentUser.uid), { keyHash: hashedKey });
+
     alert("Account created!");
     signupSection.style.display = "none";
     authSection.style.display = "block";
