@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Vault Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Family Vault</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Vault Access</h1>
 
   <div id="auth-section">
+    <h1>Login</h1>
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPassword" placeholder="Password">
     <button id="loginBtn">Log In</button>
@@ -16,20 +17,21 @@
   </div>
 
   <div id="signup-section" style="display:none;">
+    <h1>Sign Up</h1>
     <input type="email" id="signupEmail" placeholder="Email">
     <input type="password" id="signupPassword" placeholder="Password">
-    <button id="signupBtn">Sign Up</button>
+    <button id="signupBtn">Create Account</button>
     <p><a href="#" id="showLogin">Already have an account?</a></p>
   </div>
 
   <div id="vault-section" style="display:none;">
-    <input type="text" id="vaultInput" placeholder="Add to vault">
+    <h1>Your Vault</h1>
+    <input type="text" id="vaultInput" placeholder="Add vault item">
     <button id="addVaultBtn">Add</button>
     <button id="logoutBtn">Log Out</button>
     <div id="vaultItems"></div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
   <script type="module" src="script.js"></script>
 </body>
 </html>
