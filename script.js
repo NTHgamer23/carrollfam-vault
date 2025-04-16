@@ -1,7 +1,9 @@
+// Firebase Setup
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
+// Initialize Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDZdQx1OxvaL1Irrwx2OMRRUkAYAz4Jpio",
     authDomain: "carroll-fam-v.firebaseapp.com",
@@ -11,28 +13,38 @@ const firebaseConfig = {
     appId: "1:31202730208:web:424f6d013231a970ae3085",
     measurementId: "G-6L6FH62554"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// HTML Elements
 const authSection = document.getElementById("auth-section");
 const signupSection = document.getElementById("signup-section");
 const vaultSection = document.getElementById("vault-section");
-const keyPrompt = document.getElementById("keyPrompt");
 const vaultItemsDiv = document.getElementById("vaultItems");
 
+// Login Handler
 document.getElementById("loginBtn").onclick = () => {
     const email = document.getElementById("loginEmail").value;
     const pass = document.getElementById("loginPassword").value;
-
-    signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+    signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+            // After login, prompt for secret key
+            const secretKey = prompt("Enter your secret key");
+            if (hashSecretKey(secretKey) === storedSecretKey) {
+                showVault();
+            } else {
+                alert("Incorrect key!");
+                signOut(auth); // Log out user if key is incorrect
+            }
+        })
+        .catch(err => alert(err.message));
 };
 
+// Sign Up Handler
 document.getElementById("signupBtn").onclick = () => {
     const email = document.getElementById("signupEmail").value;
     const pass = document.getElementById("signupPassword").value;
-
     createUserWithEmailAndPassword(auth, email, pass)
         .then(() => {
             alert("Account created!");
@@ -42,25 +54,29 @@ document.getElementById("signupBtn").onclick = () => {
         .catch(err => alert(err.message));
 };
 
+// Switch to Sign Up Section
 document.getElementById("showSignup").onclick = () => {
     authSection.style.display = "none";
     signupSection.style.display = "block";
 };
 
+// Switch to Login Section
 document.getElementById("showLogin").onclick = () => {
     signupSection.style.display = "none";
     authSection.style.display = "block";
 };
 
+// Logout Handler
 document.getElementById("logoutBtn").onclick = async () => {
     await signOut(auth);
-    console.log("user logged out");
+    vaultSection.style.display = "none";
+    authSection.style.display = "block";
 };
 
+// Add Vault Item
 document.getElementById("addVaultBtn").onclick = async () => {
     const item = document.getElementById("vaultInput").value;
     if (!item) return;
-
     const currentUser = auth.currentUser;
     if (currentUser) {
         await addDoc(collection(db, "vault"), {
@@ -71,8 +87,7 @@ document.getElementById("addVaultBtn").onclick = async () => {
     }
 };
 
-let unsubscribe = null;
-
+// Render Vault Items
 const renderVaultItems = (items) => {
     vaultItemsDiv.innerHTML = "";
     items.forEach(({ id, item }) => {
@@ -86,43 +101,48 @@ const renderVaultItems = (items) => {
     });
 };
 
+// Show Vault
 const showVault = () => {
     authSection.style.display = "none";
     signupSection.style.display = "none";
     vaultSection.style.display = "block";
-
-    if (unsubscribe) unsubscribe();
     const q = query(collection(db, "vault"), where("userId", "==", auth.currentUser.uid));
-    unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
         const items = [];
         snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
         renderVaultItems(items);
     });
 };
 
+// Delete Vault Item
 vaultItemsDiv.addEventListener("click", async (e) => {
     if (e.target.tagName === "BUTTON" && e.target.dataset.id) {
         await deleteDoc(doc(db, "vault", e.target.dataset.id));
-        console.log("Document deleted:", e.target.dataset.id);
     }
 });
 
+// Hash secret key (SHA-512)
+const storedSecretKey = "gypsy"; // Store this securely or use Firebase for storage
+const hashSecretKey = (key) => {
+    const sha512 = new jsSHA("SHA-512", "TEXT");
+    sha512.update(key);
+    return sha512.getHash("HEX");
+};
+
+// Authentication State Listener
 onAuthStateChanged(auth, user => {
     if (user) {
-        keyPrompt.style.display = "block";  // Show secret key prompt after login
+        // If user is authenticated, prompt for secret key
+        const secretKey = prompt("Enter your secret key");
+        if (hashSecretKey(secretKey) === storedSecretKey) {
+            showVault();
+        } else {
+            alert("Incorrect key!");
+            signOut(auth);
+        }
     } else {
         vaultSection.style.display = "none";
         authSection.style.display = "block";
     }
 });
-
-document.getElementById("submitKeyBtn").onclick = () => {
-    const userInput = document.getElementById("secretKeyInput").value;
-    const hashedKey = sha3_512("gypsy");  // The correct hashed secret key
-    if (sha3_512(userInput) === hashedKey) {
-        showVault();
-    } else {
-        alert("Incorrect key");
-    }
-};
 
