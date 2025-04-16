@@ -8,29 +8,31 @@
 </head>
 <body>
 
-  <section id="auth-section">
-    <h1>Login</h1>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <button id="loginBtn">Log In</button>
-    <p>Don’t have an account? <button id="showSignup">Sign Up</button></p>
-  </section>
+  <div class="auth-container">
+    <section id="auth-section">
+      <h1>Login</h1>
+      <input type="email" id="loginEmail" placeholder="Email">
+      <input type="password" id="loginPassword" placeholder="Password">
+      <button id="loginBtn">Log In</button>
+      <p>Don’t have an account? <button id="showSignup">Sign Up</button></p>
+    </section>
 
-  <section id="signup-section" style="display:none;">
-    <h1>Sign Up</h1>
-    <input type="email" id="signupEmail" placeholder="Email">
-    <input type="password" id="signupPassword" placeholder="Password">
-    <button id="signupBtn">Create Account</button>
-    <p>Already have an account? <button id="showLogin">Log In</button></p>
-  </section>
+    <section id="signup-section" style="display:none;">
+      <h1>Sign Up</h1>
+      <input type="email" id="signupEmail" placeholder="Email">
+      <input type="password" id="signupPassword" placeholder="Password">
+      <button id="signupBtn">Create Account</button>
+      <p>Already have an account? <button id="showLogin">Log In</button></p>
+    </section>
 
-  <section id="vault-section" style="display:none;">
-    <h1>Your Vault</h1>
-    <input type="text" id="vaultInput" placeholder="Add vault item">
-    <button id="addVaultBtn">Add</button>
-    <div id="vaultItems"></div>
-    <button id="logoutBtn">Log Out</button>
-  </section>
+    <section id="vault-section" style="display:none;">
+      <h1>Your Vault</h1>
+      <input type="text" id="vaultInput" placeholder="Add vault item">
+      <button id="addVaultBtn">Add</button>
+      <div id="vaultItems"></div>
+      <button id="logoutBtn">Log Out</button>
+    </section>
+  </div>
 
   <script type="module" src="script.js"></script>
 </body>
