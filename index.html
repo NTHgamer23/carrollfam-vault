@@ -2,39 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Family Vault</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <!-- Auth Section -->
-    <div id="auth-section" class="auth-section">
-      <h1>Login</h1>
-      <input type="email" id="loginEmail" placeholder="Email" class="input-field">
-      <input type="password" id="loginPassword" placeholder="Password" class="input-field">
-      <button id="loginBtn" class="btn">Log In</button>
-      <p><a href="#" id="showSignup" class="link">Need an account?</a></p>
-    </div>
 
-    <!-- SignUp Section -->
-    <div id="signup-section" class="auth-section" style="display:none;">
-      <h1>Sign Up</h1>
-      <input type="email" id="signupEmail" placeholder="Email" class="input-field">
-      <input type="password" id="signupPassword" placeholder="Password" class="input-field">
-      <button id="signupBtn" class="btn">Create Account</button>
-      <p><a href="#" id="showLogin" class="link">Already have an account?</a></p>
-    </div>
+  <section id="auth-section">
+    <h1>Login</h1>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button id="loginBtn">Log In</button>
+    <p>Don’t have an account? <button id="showSignup">Sign Up</button></p>
+  </section>
 
-    <!-- Vault Section -->
-    <div id="vault-section" class="vault-section" style="display:none;">
-      <h1>Your Vault</h1>
-      <input type="text" id="vaultInput" placeholder="Add vault item" class="input-field">
-      <button id="addVaultBtn" class="btn">Add</button>
-      <button id="logoutBtn" class="btn logout-btn">Log Out</button>
-      <div id="vaultItems" class="vault-items"></div>
-    </div>
-  </div>
+  <section id="signup-section" style="display:none;">
+    <h1>Sign Up</h1>
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPassword" placeholder="Password">
+    <button id="signupBtn">Create Account</button>
+    <p>Already have an account? <button id="showLogin">Log In</button></p>
+  </section>
+
+  <section id="vault-section" style="display:none;">
+    <h1>Your Vault</h1>
+    <input type="text" id="vaultInput" placeholder="Add vault item">
+    <button id="addVaultBtn">Add</button>
+    <div id="vaultItems"></div>
+    <button id="logoutBtn">Log Out</button>
+  </section>
 
   <script type="module" src="script.js"></script>
 </body>
