@@ -4,10 +4,158 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Family Vault</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #80deea);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    #auth-section,
+    #signup-section,
+    #vault-section {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #0288d1;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border: 2px solid #b0bec5;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #0288d1;
+      box-shadow: 0 0 8px rgba(2, 136, 209, 0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.75rem 0;
+      font-size: 1rem;
+      background: #0288d1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+      background: #0277bd;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    p {
+      text-align: center;
+      margin-top: 1rem;
+      color: #37474f;
+      font-size: 0.9rem;
+    }
+
+    p button {
+      background: none;
+      color: #0288d1;
+      padding: 0;
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      width: auto;
+    }
+
+    p button:hover {
+      color: #0277bd;
+      transform: none;
+    }
+
+    #vaultItems {
+      margin-top: 1.5rem;
+    }
+
+    .vault-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #e0f7fa;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .vault-item button {
+      background: #ef5350;
+      color: white;
+      padding: 0.5rem 0.75rem;
+      width: auto;
+      margin: 0;
+    }
+
+    .vault-item button:hover {
+      background: #e53935;
+    }
+
+    @media (max-width: 480px) {
+      .auth-container {
+        max-width: 90%;
+      }
+
+      #auth-section,
+      #signup-section,
+      #vault-section {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      input,
+      button {
+        padding: 0.65rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
 </head>
 <body>
-
   <div class="auth-container">
     <section id="auth-section">
       <h1>Login</h1>
@@ -25,15 +173,4 @@
       <p>Already have an account? <button id="showLogin">Log In</button></p>
     </section>
 
-    <section id="vault-section" style="display:none;">
-      <h1>Your Vault</h1>
-      <input type="text" id="vaultInput" placeholder="Add vault item">
-      <button id="addVaultBtn">Add</button>
-      <div id="vaultItems"></div>
-      <button id="logoutBtn">Log Out</button>
-    </section>
-  </div>
-
-  <script type="module" src="script.js"></script>
-</body>
-</html>
+    <
